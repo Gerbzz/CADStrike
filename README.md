@@ -6,7 +6,7 @@
 
 CADStrike starts a simple part with dimensions instead of a fixed drawing. Create bracket or disk sketches, edit features and undo changes, save the `.cadstrike` project, and export a binary STL reference.
 
-### Highlights
+## Highlights
 
 - Create dimension-driven bracket and disk parts.
 - Keep stable feature IDs in an editable project.
@@ -18,7 +18,7 @@ Source-only Windows engineering checkpoint. The original local workflow was exer
 
 ## Keep the editable part
 
-The `.cadstrike` project preserves dimensions and stable feature IDs so a part can be revised. STL export is a triangle reference: it does not carry dimensions, IDs, or units, and it does not overwrite an existing output file. Keep the project for later edits; the native canvas currently shows a 2D outline.
+The `.cadstrike` project preserves dimensions and stable feature IDs so a part can be revised. STL export is a triangle reference: it does not carry dimensions, IDs, or intrinsic units. Output coordinates use millimetres by convention, and export does not overwrite an existing file. Keep the project for later edits; the native canvas currently shows a 2D outline.
 
 ## Build and use
 
