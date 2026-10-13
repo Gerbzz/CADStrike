@@ -1,6 +1,6 @@
-# CadStrike
+# CADStrike
 
-CadStrike is a local Rust parametric part editor prototype by PWDS. Its current Windows source workflow creates dimension-driven bracket and disk sketches, keeps stable feature IDs, supports edit and undo/redo in the native UI, saves editable `.cadstrike` projects, and exports a binary STL reference. The canvas shows a 2D sketch outline; it does not show a rotatable 3D solid.
+CADStrike is a local Rust parametric part editor prototype by PWDS. Its current Windows source workflow creates dimension-driven bracket and disk sketches, keeps stable feature IDs, supports edit and undo/redo in the native UI, saves editable `.cadstrike` projects, and exports a binary STL reference. The canvas shows a 2D sketch outline; it does not show a rotatable 3D solid.
 
 **Status:** source-only engineering checkpoint. The original local part workflow and tests were exercised on Windows, but this standalone source package has not been built or interactively reviewed. No binary, installer, account, or hosted service is included.
 
