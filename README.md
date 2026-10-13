@@ -16,9 +16,9 @@ CADStrike starts a simple part with dimensions instead of a fixed drawing. Creat
 
 Source-only Windows engineering checkpoint. The original local workflow was exercised, but this standalone package has not been built or interactively reviewed. The canvas shows a 2D sketch outline, not a rotatable solid; broader CAD formats and assemblies remain future work.
 
-## Shape a part
+## Keep the editable part
 
-Start with a dimension-driven bracket or disk, edit its features, and undo a change if needed. Save a `.cadstrike` project to preserve the dimensions, then export a binary STL reference for inspection. The current canvas is a 2D sketch view.
+The `.cadstrike` project preserves dimensions and stable feature IDs so a part can be revised. STL export is a triangle reference: it does not carry dimensions, IDs, or units, and it does not overwrite an existing output file. Keep the project for later edits; the native canvas currently shows a 2D outline.
 
 ## Build and use
 
