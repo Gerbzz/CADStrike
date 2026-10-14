@@ -1,4 +1,8 @@
-# CADStrike
+<p align="center">
+  <img src="assets/branding/CADStrike.png" alt="Original CADStrike stag beetle logo" width="160" height="160">
+</p>
+
+<h1 align="center">CADStrike</h1>
 
 <p align="center">
   <a href="https://prowebdevsolutions.com"><picture>
