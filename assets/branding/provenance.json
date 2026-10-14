@@ -1,0 +1,21 @@
+{
+  "app": "CADStrike",
+  "asset": "assets/branding/CADStrike.png",
+  "method": "Lossless rectangular extraction of original pixels with ImageMagick. No scaling, recoloring, tracing, generation, transparency fabrication or animal changes. Original cream outside rounded corners retained. Labels excluded.",
+  "coordinate_system": "Origin top-left; crop bounds [left, top, right, bottom), right/bottom exclusive.",
+  "source_sha256": "be5c41f093d9b943cd03a6c9669c353b6970d063bfee04d029179e73cf0c4d56",
+  "crop_bounds": [
+    1360,
+    0,
+    2016,
+    656
+  ],
+  "dimensions": [
+    656,
+    656
+  ],
+  "sha256": "912f26239f8ee8d246b7cabe26e8eb227217a43fbe2706d1d102b1759c1b24c4",
+  "decoded_rgb_sha256": "3253c6f00f1c267c49cf3e16840c63658a0e329b6088e560583ab50923fe48cd",
+  "pixel_equality_verified": true,
+  "git_blob_sha": "e4b44190be1f2a074a37c7e7cfbd92ef5049a885"
+}
