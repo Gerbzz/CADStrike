@@ -1,6 +1,11 @@
 # CADStrike
 
-**by PWDS**
+<p align="center">
+  <a href="https://prowebdevsolutions.com"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/branding/PWDS-logo-orange.svg">
+    <img src="assets/branding/PWDS-logo.png" alt="PWDS company logo" width="120">
+  </picture></a>
+</p>
 
 **Give an idea its dimensions.**
 
@@ -44,3 +49,7 @@ Remove `--offline` if required crates are not cached locally. Existing output fi
 The source package contains the original bounded part workflow. Optional DXF inspection from the local prototype is omitted here because it depends on a much larger pinned donor workspace. The newer full CAD foundation migration remains separate local work and has no verified finished CADStrike workflow. Arbitrary sketches, geometric constraints, assemblies, STEP, general B-rep, 3D viewport, autosave recovery, and cross-platform acceptance remain open. Validate this standalone package, then migrate the verified features and complete native pointer, keyboard, scaling, and accessibility review before a release.
 
 The app source is original first-party work. No donor code, logo, model, or font is bundled. Third-party Rust dependencies are listed in `Cargo.lock` and retain their own upstream licenses. No first-party source license has been selected for this checkpoint.
+
+## PWDS brand artwork
+
+The company mark in this masthead is the existing [official PWDS logo](https://github.com/Gerbzz/PWDS-Website/blob/main/public/prowebdevsolutions-logo.png), with the [official orange display asset](https://prowebdevsolutions.com/images/prowebdevsolutions-logo-orange.svg) for dark backgrounds. Any app logo above it remains the original Strike suite artwork.
