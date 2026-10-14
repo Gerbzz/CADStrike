@@ -11,6 +11,10 @@
 
 CADStrike starts a simple part with dimensions instead of a fixed drawing. Create bracket or disk sketches, edit features and undo changes, save the `.cadstrike` project, and export a binary STL reference.
 
+![CADStrike native editor showing a dimensioned six-edge bracket sketch](assets/screenshots/cadstrike-bracket-editor.png)
+
+*A retained Windows editor opened a self-authored 120 × 80 × 16 mm bracket project at 10 mm depth. The preview is a 2D sketch outline.*
+
 ## Highlights
 
 - Create dimension-driven bracket and disk parts.
@@ -19,7 +23,7 @@ CADStrike starts a simple part with dimensions instead of a fixed drawing. Creat
 
 ## Current status
 
-Source-only Windows engineering checkpoint. The original local workflow was exercised, but this standalone package has not been built or interactively reviewed. The canvas shows a 2D sketch outline, not a rotatable solid; broader CAD formats and assemblies remain future work.
+Windows engineering checkpoint. The original local workflow was exercised, and a retained capture build whose four depfile source files exactly match this public repository opened a self-authored bracket in the native editor. This standalone package has not been freshly built or interactively reviewed. The canvas shows a 2D sketch outline, not a rotatable solid; broader CAD formats and assemblies remain future work. [Screenshot provenance](docs/SCREENSHOT_PROVENANCE.md) records the bounded capture.
 
 ## Keep the editable part
 
