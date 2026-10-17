@@ -1,0 +1,291 @@
+//! DWG support through a DXF bridge.
+//!
+//! DWG files are read with the `acadrust` crate (MPL-2.0, used unmodified as a dependency) and
+//! converted to DXF bytes, which CADCraft's own DXF reader maps to its document model; saving
+//! goes the other way. Keeping the dependency behind this byte-level API isolates it: nothing
+//! else in CADCraft depends on its types. Native targets only (it memory-maps files).
+#![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
+#![forbid(unsafe_code)]
+
+/// DWG version codes we can write.
+pub const VERSIONS: &[(&str, &str)] =
+    &[("AC1015", "2000"), ("AC1018", "2004"), ("AC1021", "2007"), ("AC1024", "2010"), ("AC1027", "2013"), ("AC1032", "2018")];
+
+/// True when the bytes look like a DWG file (`AC10xx` magic).
+pub fn is_dwg(bytes: &[u8]) -> bool {
+    bytes.len() > 6 && bytes.starts_with(b"AC10") && bytes.get(4..6).is_some_and(|v| v.iter().all(u8::is_ascii_digit))
+}
+
+/// The DWG version code of a file (e.g. "AC1032").
+pub fn version(bytes: &[u8]) -> Option<String> {
+    is_dwg(bytes).then(|| String::from_utf8_lossy(bytes.get(0..6).unwrap_or_default()).to_string())
+}
+
+/// Size limits for reading a DWG file. DWG is compressed and the DXF text it converts to is
+/// several times larger (about 6x in our tests: a 10 MB DWG becomes about 60 MB of DXF), so
+/// the limits are generous for real drawings. They exist because a damaged file, or one the reader
+/// misreads, can make the DWG reader produce a drawing thousands of times larger than the file.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Limits {
+    /// Largest DWG file read at all (checked before reading starts).
+    pub max_dwg_bytes: usize,
+    /// Largest DXF rendition of a DWG (checked while it is written).
+    pub max_dxf_bytes: usize,
+}
+
+impl Limits {
+    /// 512 MB of DWG, 1 GB of DXF (more than the DXF reader's group-code limit fills).
+    pub const DEFAULT: Limits = Limits { max_dwg_bytes: 512 << 20, max_dxf_bytes: 1 << 30 };
+}
+
+/// A byte count in megabytes for messages ("9.9 MB", "1024 MB").
+#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+fn mb(n: u64) -> String {
+    let m = n as f64 / f64::from(1u32 << 20);
+    if m >= 100.0 { format!("{m:.0} MB") } else { format!("{m:.1} MB") }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+mod native {
+    use std::io::{Cursor, Write};
+    use std::panic::AssertUnwindSafe;
+
+    use super::{Limits, mb};
+
+    /// Read DWG bytes and return an ASCII DXF rendition, within [`Limits::DEFAULT`].
+    pub fn dwg_to_dxf(bytes: &[u8]) -> Result<Vec<u8>, String> {
+        dwg_to_dxf_with(bytes, Limits::DEFAULT)
+    }
+
+    /// [`dwg_to_dxf`] with explicit limits. Both are checked before the expensive step they
+    /// guard: the input size before the DWG reader runs, the DXF size while it is written, so a
+    /// runaway conversion stops at the limit instead of filling memory first.
+    pub fn dwg_to_dxf_with(bytes: &[u8], limits: Limits) -> Result<Vec<u8>, String> {
+        if bytes.len() > limits.max_dwg_bytes {
+            return Err(format!("DWG: the file is {}, larger than the {} CADCraft opens", mb(bytes.len() as u64), mb(limits.max_dwg_bytes as u64)));
+        }
+        let mut doc = std::panic::catch_unwind(|| acadrust::DwgReader::from_stream(Cursor::new(bytes)).read())
+            .map_err(|_| "the DWG reader failed on this file".to_string())?
+            .map_err(|e| format!("DWG: {e}"))?;
+        table_merges(&mut doc);
+        table_style_rows(&mut doc, false);
+        let mut out = CappedWriter { buf: Vec::new(), limit: limits.max_dxf_bytes, exceeded: false };
+        let written = std::panic::catch_unwind(AssertUnwindSafe(|| acadrust::DxfWriter::new(&doc).write_to_writer(&mut out)))
+            .map_err(|_| "the DWG→DXF conversion failed on this file".to_string())?;
+        if out.exceeded {
+            return Err(format!(
+                "DWG: converting this {} file produced more than {} of drawing data (the limit); \
+                 the file is probably damaged, or uses objects the DWG reader misreads",
+                mb(bytes.len() as u64),
+                mb(limits.max_dxf_bytes as u64)
+            ));
+        }
+        written.map_err(|e| format!("DWG→DXF: {e}"))?;
+        Ok(add_header_vars(out.buf, &doc.header))
+    }
+
+    /// Merged table cells onto the cells. acadrust 0.6.3 reads a 2010+ (AC1024+) DWG table's
+    /// merged cells into the table's `merged_ranges` only, while its DXF writer writes each cell's
+    /// own merge groups (173, 175, 176), so without this the merges would be lost. Tables whose
+    /// cells already carry merges are left alone. Each range's first cell gets the span; the
+    /// cells it covers are marked merged with no span of their own, as CADCraft's DXF writer does.
+    fn table_merges(doc: &mut acadrust::CadDocument) {
+        for e in doc.entities_mut() {
+            let acadrust::entities::EntityType::Table(t) = e else { continue };
+            if t.merged_ranges.is_empty() || t.rows.iter().flat_map(|r| &r.cells).any(|c| c.merge_width > 1 || c.merge_height > 1) {
+                continue;
+            }
+            let (rows, cols) = (t.rows.len(), t.columns.len());
+            // A real table has at most one merge per cell; more ranges than that come from a
+            // damaged file and would only make this rows × cols × ranges.
+            let max_ranges = rows.saturating_mul(cols).min(1 << 16);
+            for r in t.merged_ranges.iter().take(max_ranges).cloned().collect::<Vec<_>>() {
+                // Clamp to the table: the ranges come from the file.
+                let (bottom, right) = (r.bottom_row.min(rows.saturating_sub(1)), r.right_col.min(cols.saturating_sub(1)));
+                if r.top_row > bottom || r.left_col > right || rows == 0 || cols == 0 || (r.top_row, r.left_col) == (bottom, right) {
+                    continue;
+                }
+                let span = |n: usize| i32::try_from(n + 1).unwrap_or(i32::MAX);
+                for (ri, row) in t.rows.iter_mut().enumerate().take(bottom + 1).skip(r.top_row) {
+                    for (ci, cell) in row.cells.iter_mut().enumerate().take(right + 1).skip(r.left_col) {
+                        cell.merged = 1;
+                        let first = (ri, ci) == (r.top_row, r.left_col);
+                        cell.merge_width = if first { span(right - r.left_col) } else { 0 };
+                        cell.merge_height = if first { span(bottom - r.top_row) } else { 0 };
+                    }
+                }
+            }
+        }
+    }
+
+    /// Table styles' title and header suppression between the two places acadrust 0.6.3 keeps
+    /// it. 2010+ (AC1024+) DWG stores it only in the style's flags (title 1, header 2), while
+    /// acadrust's DXF reader and writer use the `title_suppressed`/`header_suppressed` fields
+    /// (groups 280, 281). `to_flags` copies the fields into the flags before a DWG is written;
+    /// otherwise the flags are copied into the fields after one is read. Older versions store
+    /// both and are left alone.
+    fn table_style_rows(doc: &mut acadrust::CadDocument, to_flags: bool) {
+        use acadrust::objects::{ObjectType, TableStyleFlags};
+        if doc.version < acadrust::DxfVersion::AC1024 {
+            return;
+        }
+        for o in doc.objects.values_mut() {
+            let ObjectType::TableStyle(s) = o else { continue };
+            for (bit, suppressed) in
+                [(TableStyleFlags::TITLE_SUPPRESSED, &mut s.title_suppressed), (TableStyleFlags::HEADER_SUPPRESSED, &mut s.header_suppressed)]
+            {
+                if to_flags {
+                    s.flags.set(bit, *suppressed);
+                } else {
+                    *suppressed = s.flags.contains(bit);
+                }
+            }
+        }
+    }
+
+    /// Header variables the DWG reader fills in but acadrust's DXF writer (0.6.3) leaves out of
+    /// the HEADER section: (name, group code, value).
+    fn unwritten_header_vars(h: &acadrust::document::HeaderVariables) -> [(&'static str, i32, String); 7] {
+        [
+            ("$ANGBASE", 50, h.angle_base.to_string()),
+            ("$ANGDIR", 70, h.angle_direction.to_string()),
+            ("$FILLETRAD", 40, h.fillet_radius.to_string()),
+            ("$CHAMFERA", 40, h.chamfer_distance_a.to_string()),
+            ("$CHAMFERB", 40, h.chamfer_distance_b.to_string()),
+            ("$ELEVATION", 40, h.elevation.to_string()),
+            ("$THICKNESS", 40, h.thickness.to_string()),
+        ]
+    }
+
+    /// Add the [`unwritten_header_vars`] to the HEADER section of acadrust's DXF text, before its
+    /// ENDSEC; a variable the writer already wrote is left alone. Text of another layout than
+    /// acadrust's (`  0\r\nSECTION\r\n  2\r\nHEADER\r\n` … `  0\r\nENDSEC\r\n`) is returned unchanged.
+    fn add_header_vars(mut dxf: Vec<u8>, h: &acadrust::document::HeaderVariables) -> Vec<u8> {
+        const START: &[u8] = b"  0\r\nSECTION\r\n  2\r\nHEADER\r\n";
+        const END: &[u8] = b"\r\n  0\r\nENDSEC\r\n";
+        if !dxf.starts_with(START) {
+            return dxf;
+        }
+        let Some(end) = dxf.windows(END.len()).position(|w| w == END).map(|p| p + 2) else { return dxf };
+        let section = dxf.get(..end).unwrap_or_default();
+        let mut add = String::new();
+        for (name, code, value) in unwritten_header_vars(h) {
+            let written = section.windows(name.len() + 2).any(|w| w.starts_with(name.as_bytes()) && w.ends_with(b"\r\n"));
+            if !written && value.parse::<f64>().is_ok_and(f64::is_finite) {
+                add.push_str(&format!("  9\r\n{name}\r\n{code:>3}\r\n{value}\r\n"));
+            }
+        }
+        dxf.splice(end..end, add.into_bytes());
+        dxf
+    }
+
+    /// Collects the DXF text and fails the write once it would grow past `limit`.
+    struct CappedWriter {
+        buf: Vec<u8>,
+        limit: usize,
+        exceeded: bool,
+    }
+
+    impl Write for CappedWriter {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            // Sticky: once over, every later write fails too.
+            if self.exceeded || self.buf.len().saturating_add(b.len()) > self.limit {
+                self.exceeded = true;
+                return Err(std::io::Error::other("DXF size limit reached"));
+            }
+            self.buf.extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    /// Oldest DWG version written; older DXF input is written as this version.
+    const MIN_DWG_VERSION: acadrust::DxfVersion = acadrust::DxfVersion::AC1018;
+
+    /// Convert DXF bytes into a DWG file of the DXF's version, and at least AutoCAD 2004
+    /// (AC1018).
+    pub fn dxf_to_dwg(dxf: &[u8]) -> Result<Vec<u8>, String> {
+        convert(dxf, None)
+    }
+
+    /// Convert DXF bytes into a DWG file of `version`, a code from [`super::VERSIONS`] ("AC1032"),
+    /// whatever version the DXF declares.
+    pub fn dxf_to_dwg_as(dxf: &[u8], version: &str) -> Result<Vec<u8>, String> {
+        let v = match version.trim().to_ascii_uppercase().as_str() {
+            "AC1015" => acadrust::DxfVersion::AC1015,
+            "AC1018" => acadrust::DxfVersion::AC1018,
+            "AC1021" => acadrust::DxfVersion::AC1021,
+            "AC1024" => acadrust::DxfVersion::AC1024,
+            "AC1027" => acadrust::DxfVersion::AC1027,
+            "AC1032" => acadrust::DxfVersion::AC1032,
+            _ => return Err(super::unsupported(version)),
+        };
+        convert(dxf, Some(v))
+    }
+
+    fn convert(dxf: &[u8], version: Option<acadrust::DxfVersion>) -> Result<Vec<u8>, String> {
+        let data = dxf.to_vec();
+        let mut doc = std::panic::catch_unwind(move || acadrust::DxfReader::from_reader(Cursor::new(data)).and_then(|r| r.read()))
+            .map_err(|_| "the DXF→DWG conversion failed".to_string())?
+            .map_err(|e| format!("DXF: {e}"))?;
+        match version {
+            Some(v) => doc.version = v,
+            // Without a version asked for, write at least AutoCAD 2004 (AC1018) DWG: R2000 DWG
+            // has no true colours, transparency, table styles or gradients. The DXF stays R2000;
+            // only the DWG is newer.
+            None if doc.version < MIN_DWG_VERSION => doc.version = MIN_DWG_VERSION,
+            None => {}
+        }
+        table_style_rows(&mut doc, true);
+        std::panic::catch_unwind(AssertUnwindSafe(|| acadrust::DwgWriter::write_to_vec(&doc)))
+            .map_err(|_| "the DWG writer failed on this drawing".to_string())?
+            .map_err(|e| format!("DWG write: {e}"))
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use native::{dwg_to_dxf, dwg_to_dxf_with, dxf_to_dwg, dxf_to_dwg_as};
+
+/// The error for a DWG version CADCraft can't write.
+#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+fn unsupported(version: &str) -> String {
+    let list: Vec<&str> = VERSIONS.iter().map(|(_, year)| *year).collect();
+    format!("DWG version `{version}` can't be written (CADCraft writes {})", list.join(", "))
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn dwg_to_dxf(_bytes: &[u8]) -> Result<Vec<u8>, String> {
+    Err("DWG files can't be opened in the web build yet; save as DXF".into())
+}
+#[cfg(target_arch = "wasm32")]
+pub fn dwg_to_dxf_with(_bytes: &[u8], _limits: Limits) -> Result<Vec<u8>, String> {
+    Err("DWG files can't be opened in the web build yet; save as DXF".into())
+}
+#[cfg(target_arch = "wasm32")]
+pub fn dxf_to_dwg(_dxf: &[u8]) -> Result<Vec<u8>, String> {
+    Err("DWG files can't be written in the web build yet; save as DXF".into())
+}
+#[cfg(target_arch = "wasm32")]
+pub fn dxf_to_dwg_as(_dxf: &[u8], _version: &str) -> Result<Vec<u8>, String> {
+    Err("DWG files can't be written in the web build yet; save as DXF".into())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn detects_magic() {
+        assert!(is_dwg(b"AC1032\0\0\0\0"));
+        assert!(!is_dwg(b"  0\r\nSECTION"));
+        assert_eq!(version(b"AC1018xxxx").as_deref(), Some("AC1018"));
+    }
+
+    #[test]
+    fn garbage_is_an_error_not_a_crash() {
+        assert!(dwg_to_dxf(b"AC1032 this is not a dwg file at all").is_err());
+        assert!(dwg_to_dxf(b"").is_err());
+    }
+}

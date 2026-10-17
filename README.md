@@ -13,6 +13,10 @@
 
 **Give an idea its dimensions.**
 
+## CADCraft foundation review branch
+
+The [foundation](foundation/) directory is an isolated CADStrike desktop candidate built from pinned CADCraft source. It includes CADCraft's editable 2D drawing engine, constraints, DXF persistence and native editor, plus a selected-file import of this repository's bracket and disk sketches into a separate drawing. The existing bracket editor at the repository root remains available during review. [Migration details and limits](docs/CADCRAFT_FOUNDATION.md) explain how to run both workflows and what has been verified.
+
 CADStrike starts a simple part with dimensions instead of a fixed drawing. Create bracket or disk sketches, edit features and undo changes, save the `.cadstrike` project, and export a binary STL reference.
 
 ![CADStrike native editor showing a dimensioned six-edge bracket sketch](assets/screenshots/cadstrike-bracket-editor.png)
