@@ -58,7 +58,7 @@ Remove `--offline` if required crates are not cached locally. Existing output fi
 
 ## Scope and next steps
 
-The source package contains the original bounded part workflow. Optional DXF inspection from the local prototype is omitted here because it depends on a much larger pinned donor workspace. The newer full CAD foundation migration remains separate local work and has no verified finished CADStrike workflow. Arbitrary sketches, geometric constraints, assemblies, STEP, general B-rep, 3D viewport, autosave recovery, and cross-platform acceptance remain open. Validate this standalone package, then migrate the verified features and complete native pointer, keyboard, scaling, and accessibility review before a release.
+The root source package contains the original bounded part workflow. Its optional DXF inspection remains outside this root crate. The separate `foundation/` workspace brings a pinned CADCraft 2D drawing candidate into this branch, with a visible legacy sketch import; it is still short of a unified editable CADStrike part workflow. General 3D parametric features, assemblies, STEP, B-rep solids, and cross-platform acceptance remain open. Complete native pointer, keyboard, scaling, and accessibility review before a release.
 
 The app source is original first-party work. No donor code, logo, model, or font is bundled. Third-party Rust dependencies are listed in `Cargo.lock` and retain their own upstream licenses. No first-party source license has been selected for this checkpoint.
 

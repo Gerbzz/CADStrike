@@ -1,8 +1,6 @@
 name: CADCraft foundation review
 
 on:
-  push:
-    branches: [codex/cadcraft-foundation-ui-20261017]
   pull_request:
 
 jobs:
@@ -19,5 +17,7 @@ jobs:
         run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadstrike-project --test legacy
       - name: Test engine command
         run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-engine --lib strike_part
+      - name: Test selected-file editor import
+        run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-ui-egui --lib selected_cadstrike_part_opens_a_separate_2d_drawing
       - name: Check native CADStrike editor
         run: cargo check --locked --manifest-path foundation/Cargo.toml -p cadstrike
