@@ -13,6 +13,10 @@
 
 **Give an idea its dimensions.**
 
+## CADCraft foundation review branch
+
+The [foundation](foundation/) directory is an isolated CADStrike desktop candidate built from pinned CADCraft source. It includes CADCraft's editable 2D drawing engine, constraints, DXF persistence and native editor, plus a selected-file import of this repository's bracket and disk sketches into a separate drawing. The existing bracket editor at the repository root remains available during review. [Migration details and limits](docs/CADCRAFT_FOUNDATION.md) explain how to run both workflows and what has been verified.
+
 CADStrike starts a simple part with dimensions instead of a fixed drawing. Create bracket or disk sketches, edit features and undo changes, save the `.cadstrike` project, and export a binary STL reference.
 
 ![CADStrike native editor showing a dimensioned six-edge bracket sketch](assets/screenshots/cadstrike-bracket-editor.png)
@@ -54,7 +58,7 @@ Remove `--offline` if required crates are not cached locally. Existing output fi
 
 ## Scope and next steps
 
-The source package contains the original bounded part workflow. Optional DXF inspection from the local prototype is omitted here because it depends on a much larger pinned donor workspace. The newer full CAD foundation migration remains separate local work and has no verified finished CADStrike workflow. Arbitrary sketches, geometric constraints, assemblies, STEP, general B-rep, 3D viewport, autosave recovery, and cross-platform acceptance remain open. Validate this standalone package, then migrate the verified features and complete native pointer, keyboard, scaling, and accessibility review before a release.
+The root source package contains the original bounded part workflow. Its optional DXF inspection remains outside this root crate. The separate `foundation/` workspace brings a pinned CADCraft 2D drawing candidate into this branch, with a visible legacy sketch import; it is still short of a unified editable CADStrike part workflow. General 3D parametric features, assemblies, STEP, B-rep solids, and cross-platform acceptance remain open. Complete native pointer, keyboard, scaling, and accessibility review before a release.
 
 The app source is original first-party work. No donor code, logo, model, or font is bundled. Third-party Rust dependencies are listed in `Cargo.lock` and retain their own upstream licenses. No first-party source license has been selected for this checkpoint.
 

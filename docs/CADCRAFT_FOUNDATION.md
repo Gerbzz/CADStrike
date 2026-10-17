@@ -1,0 +1,17 @@
+# CADCraft foundation candidate
+
+This branch retains the original CADStrike part editor at the repository root and adds a separate Rust workspace at `foundation/`. The candidate is based on CADCraft commit `c57879a5c8f5e3a6be574a820add5e28eb25e9b1` from `storytold/cadcraft`. Its `craft-ui` dependency is pinned to `storytold/craft-libs` commit `5c874d51eeb3de70e735c8ce87a59a7dedd47675`. The full source diff in the original isolated candidate is preserved here, including the strict legacy project reader, donor command and selected-file sketch import. The copied workspace uses its own `Cargo.lock` and has no dependency on the older CADStrike crate at the root.
+
+## Available workflow
+
+From `foundation/`, run `cargo run --locked -p cadstrike`. The desktop uses CADCraft's drawing tools, dimensions, constraints, selection, undo and native DXF file workflow. In the File menu, **Import CADStrike sketch** asks the user to choose an existing `.cadstrike` bracket or disk project. It validates the source, creates a separate metric 2D drawing with stable source-ID to CADCraft-handle mapping, and leaves the source file and previously open drawing intact. Save the resulting drawing as DXF to continue editing in this candidate. Invalid or oversized legacy files report an error without replacing the active drawing. The imported sketch geometry is 2D; it does not carry the old part's extrusion as an editable solid.
+
+For the original part workflow, run `cargo run --locked --features native-ui --bin cadstrike-ui` from the repository root. Its `.cadstrike` v1 file remains the editable bracket/disk source, with STL export through the existing CLI. The foundation does not replace that executable or silently convert its files.
+
+## Review evidence and remaining work
+
+The isolated source checkpoint recorded six converter tests, one engine command test, a donor native desktop build and a selected-file import test. Those results belong to the earlier local candidate, not a new build of this branch. This branch's Windows CI runs the focused tests and checks the desktop's Rust code. A fresh native screenshot and pointer/keyboard review are still required before claiming visual acceptance. The legacy `.cadstrike` format and CADCraft DXF are distinct; a unified editable Strike container, 3D feature history, solid viewport, old-file precision repair, assembly workflow and cross-platform testing are not finished.
+
+`foundation/LICENSE-MIT`, `foundation/LICENSE-APACHE`, `foundation/NOTICE`, `foundation/ATTRIBUTION.md` and `foundation/STRIKE-REDISTRIBUTION-NOTES.md` remain with the donor code. The excluded ArtCraft brand artwork and CADCraft app icons were not copied. The desktop Windows icon is generated from original Strike source; About uses the approved transparent CADStrike logo already in the parent repository, with its original provenance. `acadrust` 0.6.3 is an unconditional native dependency under MPL-2.0; `colored` 2.2.0 is also MPL-2.0 in the lockfile. Dependency notice/source closure, exact release graph, and binary packaging need review before distribution. The working names are not trademark-cleared.
+
+The upstream sparse checkout omitted packaging assets and documentation screenshots. The two public contributor metadata files were restored byte-for-byte from the pinned donor commit so the About panel can credit upstream contributors. No release package or example drawing is claimed from this source copy. The workspace app code and focused converter tests are present; CI is the current verification gate.
