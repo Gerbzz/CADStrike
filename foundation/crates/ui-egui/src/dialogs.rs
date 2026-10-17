@@ -316,6 +316,9 @@ fn about(ctx: &egui::Context, open: &mut bool) {
                 1 => crate::credits::contributors_ui(ui),
                 2 => crate::credits::models_ui(ui),
                 _ => {
+                    if let Some(logo) = cadstrike_about_logo(ctx) {
+                        ui.add(egui::Image::from_texture(&logo).fit_to_exact_size(vec2(88.0, 88.0)));
+                    }
                     ui.heading("CADStrike");
                     ui.label(crate::tf!("Version {version}", version = env!("CARGO_PKG_VERSION")));
                     ui.label("Local 2D drafting candidate built on the CADCraft engine. Imported CADStrike parts currently retain only their editable sketches.");
@@ -327,6 +330,33 @@ fn about(ctx: &egui::Context, open: &mut bool) {
                 }
             }
         });
+}
+
+fn cadstrike_about_logo(ctx: &egui::Context) -> Option<egui::TextureHandle> {
+    let id = egui::Id::new("cadstrike_approved_about_logo");
+    if let Some(logo) = ctx.data_mut(|data| data.get_temp::<egui::TextureHandle>(id)) {
+        return Some(logo);
+    }
+    let png = include_bytes!("../../../../assets/branding/CADStrike.png");
+    let rgba = image::load_from_memory_with_format(png, image::ImageFormat::Png).ok()?.to_rgba8();
+    let size = [rgba.width() as usize, rgba.height() as usize];
+    let logo = ctx.load_texture(
+        "CADStrike approved transparent logo",
+        egui::ColorImage::from_rgba_unmultiplied(size, rgba.as_raw()),
+        egui::TextureOptions::LINEAR,
+    );
+    ctx.data_mut(|data| data.insert_temp(id, logo.clone()));
+    Some(logo)
+}
+
+#[cfg(test)]
+#[test]
+fn approved_cadstrike_about_logo_has_transparent_corners() {
+    let png = include_bytes!("../../../../assets/branding/CADStrike.png");
+    let rgba = image::load_from_memory_with_format(png, image::ImageFormat::Png).expect("approved CADStrike logo decodes").to_rgba8();
+    assert_eq!(rgba.dimensions(), (656, 656));
+    assert_eq!(rgba.get_pixel(0, 0)[3], 0);
+    assert_eq!(rgba.get_pixel(655, 655)[3], 0);
 }
 
 fn commands(app: &mut CadApp, ctx: &egui::Context, open: &mut bool) {
