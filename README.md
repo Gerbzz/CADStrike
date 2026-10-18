@@ -60,7 +60,7 @@ Remove `--offline` if required crates are not cached locally. Existing output fi
 
 The root source package contains the original bounded part workflow. Its optional DXF inspection remains outside this root crate. The separate `foundation/` workspace brings a pinned CADCraft 2D drawing candidate into this branch, with a visible legacy sketch import; it is still short of a unified editable CADStrike part workflow. General 3D parametric features, assemblies, STEP, B-rep solids, and cross-platform acceptance remain open. Complete native pointer, keyboard, scaling, and accessibility review before a release.
 
-The app source is original first-party work. No donor code, logo, model, or font is bundled. Third-party Rust dependencies are listed in `Cargo.lock` and retain their own upstream licenses. No first-party source license has been selected for this checkpoint.
+The original root app source is first-party work and bundles no donor code, logo, model, or font. The separate [`foundation/`](foundation/) candidate includes pinned CADCraft source under its [attribution](foundation/ATTRIBUTION.md), [notice](foundation/NOTICE), and [redistribution notes](foundation/STRIKE-REDISTRIBUTION-NOTES.md). Third-party Rust dependencies are listed in the corresponding `Cargo.lock` files and retain their upstream licenses. No first-party license has been selected for the original root checkpoint.
 
 ## PWDS brand artwork
 
