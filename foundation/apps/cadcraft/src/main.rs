@@ -412,8 +412,8 @@ mod tests {
         let icon = super::app_icon().expect("generated CADStrike icon");
         assert_eq!((icon.width, icon.height, icon.rgba.len()), (128, 128, 128 * 128 * 4));
         assert!(icon.rgba.chunks_exact(4).any(|p| p[3] == 255 && p[1] > p[0]));
-        assert!(super::long_version().contains("CADStrike"));
-        assert!(super::long_version().contains("CADCraft foundation"));
+        assert!(super::version_string().contains("CADStrike"));
+        assert!(super::version_string().contains("CADCraft foundation"));
     }
 
     /// View ▸ Theme ▸ System on Linux: winit reports no theme, so the desktop's answer stands in;
