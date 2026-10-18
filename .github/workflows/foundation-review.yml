@@ -21,3 +21,7 @@ jobs:
         run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-ui-egui --lib cadstrike_
       - name: Check native CADStrike editor
         run: cargo check --locked --manifest-path foundation/Cargo.toml -p cadstrike
+      - name: Test CADStrike desktop binary
+        run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadstrike --bin cadstrike
+      - name: Build CADStrike desktop binary
+        run: cargo build --locked --manifest-path foundation/Cargo.toml -p cadstrike --bin cadstrike
