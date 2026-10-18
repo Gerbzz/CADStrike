@@ -4,7 +4,7 @@
 //! icon, the GPU canvas set-up, the control server) vanished. A launch from a desktop menu has no
 //! terminal, so the file is what a bug report can attach: `<settings dir>/logs/cadcraft.log`
 //! (`CADCRAFT_CONFIG_DIR`, or the platform settings directory; see `config_dir` in `main.rs`).
-//! Each start moves the previous log to `cadcraft.1.log` (and that one to `.2`), so the log of a
+//! Each start moves the previous log to `cadstrike.1.log` (and that one to `.2`), so the log of a
 //! run that crashed survives the next launch.
 //!
 //! Levels: `info` for CADCraft's own crates, `warn` for everything else (wgpu and naga are
@@ -30,7 +30,7 @@ use log::LevelFilter;
 pub const LOG_FILE: &str = "cadstrike.log";
 /// The log directory inside the settings directory.
 pub const LOG_DIR: &str = "logs";
-/// How many previous logs are kept (`cadcraft.1.log` … `cadcraft.<KEEP>.log`).
+/// How many previous logs are kept (`cadstrike.1.log` … `cadstrike.<KEEP>.log`).
 pub const KEEP: usize = 2;
 /// The log file stops growing past this size (a runaway warning can't fill the disk).
 pub const MAX_FILE_BYTES: u64 = 16 * 1024 * 1024;
@@ -504,7 +504,7 @@ mod tests {
         // A second launch rotates: the first log becomes `.1`.
         let second = AppLogger::new(Filter::parse(DEFAULT_FILTER), false);
         assert_eq!(second.attach_dir(&dir).expect("attach again"), dir.join(LOG_FILE));
-        assert_eq!(read(&dir.join("cadcraft.1.log")), text);
+        assert_eq!(read(&dir.join("cadstrike.1.log")), text);
         let _ = std::fs::remove_dir_all(&dir);
     }
 
