@@ -131,6 +131,12 @@ fn services() -> Services {
                 .pick_file()
                 .map(|p| p.to_string_lossy().to_string())
         })),
+        pick_cadstrike_sketch: Some(Box::new(|| {
+            rfd::FileDialog::new()
+                .add_filter(i18n::t("CADStrike legacy sketches"), &["cadstrike"])
+                .pick_file()
+                .map(|p| p.to_string_lossy().to_string())
+        })),
         pick_save: Some(Box::new(|name: &str| {
             filters_for_save(name)
                 .iter()
