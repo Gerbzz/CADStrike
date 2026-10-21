@@ -472,7 +472,19 @@ fn normal_zoom_pattern_is_unchanged() {
         assert_eq!(crate::hatch::pattern_lines(&cadcraft_doc::Drawing::new_imperial(), &h, &loops, px, None), full, "{pattern}");
         // A view covering the whole hatch changes nothing either.
         let all = Bounds2::new(Vec2::new(-1.0, -1.0), Vec2::new(7.0, 5.0));
-        assert_eq!(crate::hatch::pattern_lines(&cadcraft_doc::Drawing::new_imperial(), &h, &loops, px, Some(&all)), full, "{pattern}");
+        let clipped = crate::hatch::pattern_lines(&cadcraft_doc::Drawing::new_imperial(), &h, &loops, px, Some(&all));
+        // Clamping intersections to the view can snap a boundary coordinate by roundoff.
+        // Keep the same runs, vertices and order, allowing only a few machine epsilons.
+        assert_eq!(clipped.len(), full.len(), "{pattern}: run count");
+        for (actual, expected) in clipped.iter().zip(&full) {
+            assert_eq!(actual.len(), expected.len(), "{pattern}: vertex count");
+            for (a, b) in actual.iter().zip(expected) {
+                for (x, y) in [(a.x, b.x), (a.y, b.y)] {
+                    let tolerance = 32.0 * f64::EPSILON * x.abs().max(y.abs()).max(1.0);
+                    assert!(x.is_finite() && y.is_finite() && (x - y).abs() <= tolerance, "{pattern}: {a:?} vs {b:?}");
+                }
+            }
+        }
     }
 }
 
