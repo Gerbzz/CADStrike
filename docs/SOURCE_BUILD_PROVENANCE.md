@@ -21,7 +21,9 @@ This is an imported foundation with localized integration changes. It is not mer
 
 ## Upstream update status
 
-Official CADCraft `main` was reverified at [`7fef8cbe2fb8dbafdcf6ebda8aa3ba0623bcbec1`](https://github.com/storytold/cadcraft/commit/7fef8cbe2fb8dbafdcf6ebda8aa3ba0623bcbec1), dated 2026-10-20. GitHub reports it 230 commits ahead of the imported base. The existing donor pin has not been silently advanced. That broader delta requires compatibility review and focused tests around the retained CADStrike import, settings, UI and identity changes before integration. The coordinating task is auditing the detailed upstream delta separately.
+Official CADCraft `main` was last reverified at [`0cf3bdea83ebbe02fb2e674b23f07de4acfa73da`](https://github.com/storytold/cadcraft/commit/0cf3bdea83ebbe02fb2e674b23f07de4acfa73da), dated 2026-10-21 07:40:18 UTC. GitHub reports it 232 commits ahead of the imported base. It advanced by two commits during this audit; those two commits only change `.github/workflows/nix.yml`, switching to shared Nix CI, with no application-source delta from the previously inspected `7fef8cb` head.
+
+The existing donor pin has not been advanced. The broader delta requires compatibility review and focused tests around the retained CADStrike import, settings, UI and identity changes before integration. The coordinating task is auditing that detailed upstream delta separately; this branch does not claim the 232-commit update is integrated or tested.
 
 ## Room PC evidence and limits
 
@@ -29,7 +31,7 @@ No matching CADStrike/CadCraft process or named desktop/Start Menu shortcut was 
 
 **The exact executable the user saw could not be identified.** The old README launch command is a demonstrated selection problem, not proof of a specific stale installed executable or shortcut. The first CIM process query was unavailable under the Windows permissions; the independent `Get-Process` and file checks succeeded.
 
-Lightweight PowerShell checks cover the foundation selection, separate target directory, spaces/apostrophes in argument forwarding, no-launch modes, Cargo failure propagation and caller-environment restoration. Cargo is intercepted in those tests. At the initial launcher-only checkpoint no native build or app launch had been performed. The later source-test continuation is recorded below. No new runtime screenshot or Library screenshot ID is claimed. A fresh source-matched foundation desktop build and safe native runtime review remain required before asserting that the user's displayed app is corrected.
+Lightweight PowerShell checks cover the foundation selection, separate target directory, spaces/apostrophes in argument forwarding, no-launch modes, Cargo failure propagation and caller-environment restoration. Cargo is intercepted in those tests. The initial launcher-only checkpoint had no native build or app launch; the completed build and native runtime evidence are recorded below. This candidate was reviewed in isolation. No existing installed app or shortcut was redirected, and the earlier executable seen by the user remains unidentified.
 
 ## Import-safeguard continuation
 
@@ -39,6 +41,36 @@ An independent read-only review cleared the launcher and six-file safeguard chan
 
 - The engine regression first failed at the new unsaved-import assertion with the fix temporarily omitted (2 passed, 1 failed, exit 101). Restoring the reviewed fix made all 3 engine import tests pass.
 - All 6 legacy converter tests passed, including stable IDs, unchanged source bytes and native DXF round-trip preservation.
-- The UI regression gate did not start: the process guard detected SoundStrike Cargo jobs, first `soundcraft-playback mono_device_`, then `soundcraft-engine io::export_safety_tests` under the Room PC's `2026-10-21/task-9` target directory. No conflicting CAD compile was started. Every temporary regression mutation was restored.
+- The UI regression gate initially deferred to other Cargo jobs. Once the single build slot was available, deliberately routing imports through the generic drawing picker produced the expected failures (2 passed, 3 failed, exit 101). Restoring the dedicated picker made all 5 UI import tests pass. Every temporary regression mutation was restored.
 
-UI regressions, donor dialog integration tests, native desktop check/test/build, root compatibility tests and runtime acceptance remain pending build-slot coordination. Logs, exact commands, source patches and exit codes for the completed gates are retained beside this checkout under `build-evidence/`. C: remained above 2 TB free, far above the required 20 GiB floor. No installer, prebuilt app executable, native CAD app launch, push, merge or release was performed; no OS execution denial occurred in these completed gates.
+## Completed native verification
+
+The build exposed an additional Windows identity defect: `winresource` escaped the apostrophe in `Neil's Room`, causing the Windows resource compiler to report RC2135 for the icon path. The build script previously tolerated that error and omitted the icon/version resources. The fix emits the same icon, resource ID 1, through the documented raw resource-content API with correct filename quoting. The launcher and CI now require successful resource compilation. No artwork was changed. An independent review cleared this follow-up after a small documentation correction.
+
+The source-matched desktop was built from clean commit `6a104ffb7b915deb335dcefe2464f57b999b0d0f`. Earlier converter, engine and UI receipts retain their exact source snapshots; the later follow-up changes the Windows build resources, launcher, CI and documentation, not the tested import implementation.
+
+| Gate | Result |
+| --- | --- |
+| Legacy sketch converter | 6 passed |
+| Engine import safeguards | 3 passed; unsaved regression reproduced before restoring the fix |
+| UI import safeguards | 5 passed; wrong-picker regression reproduced before restoring the fix |
+| Donor dialog dispatch integration | 5 passed |
+| Resource-required native desktop check | Passed |
+| Native desktop tests | 36 passed |
+| Foundation desktop build | Passed |
+| Legacy root workflow tests | 3 passed |
+| Intercepted-Cargo launcher tests, selected Rust formatting and whitespace checks | Passed |
+
+These are 58 focused Rust test cases, plus the check/build and launcher gates. They do not claim exhaustive workspace or cross-platform acceptance. Logs, commands, source patches and exit codes are retained beside this checkout under `build-evidence/`.
+
+The resulting `foundation/target/debug/cadstrike.exe` is 52,771,328 bytes, SHA-256 `212E992CAB2C631077404375FD1A82E5CEC4840A7C4EEB7621D436E53E2E7FD5`. Windows metadata identifies CADStrike 0.5.0 with the description `CADStrike local 2D drafting candidate, based on CADCraft`. Executing `--version` returned:
+
+```text
+CADStrike 0.5.0 (6a104ffb7b915deb335dcefe2464f57b999b0d0f; CADCraft foundation)
+```
+
+That exact local executable launched a native window titled CADStrike. Its documented loopback control API reported GPU rendering and captured a 1600 x 1000 PNG of the complete native editor displaying the donor sample drawing. The image was visually reviewed and delivered privately through Library. This is a capture of the running native foundation window. The retained README image still depicts the earlier root editor.
+
+The same native process imported a task-owned legacy sketch into a second drawing with six entities. Inspection confirmed both drawings remained present, the import was dirty, and Close displayed an unsaved-drawing prompt. The legacy source hash remained unchanged. The test application then exited cleanly through its documented API. Native receipts, image identity and source/binary hashes are retained beside this checkout under `native-review/`.
+
+The operating-system file picker was not manually driven; its dedicated callback and `.cadstrike` filter are covered by source review and focused tests. Broader pointer, keyboard, scaling and accessibility acceptance remains open. This is a 2D drafting candidate, without a claim of general 3D solids. C: remained above 2 TB free, exceeding the required 20 GiB floor. No installer or downloaded prebuilt app was run, no existing installation was replaced, and no push, merge or release occurred. No OS execution denial or pending execution approval remains.

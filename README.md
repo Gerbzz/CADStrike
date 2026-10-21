@@ -43,7 +43,7 @@ The root command `cargo run --features native-ui --bin cadstrike-ui` opens the l
 
 ## Verification status
 
-The [foundation review workflow](.github/workflows/foundation-review.yml) tests the legacy converter, import UI and desktop, and builds the actual foundation binary. The launcher has lightweight selection tests that do not build or launch native code. A fresh source-matched native screenshot and pointer/keyboard review of the foundation desktop remain outstanding; the retained image below shows the legacy editor. Source presence and launcher tests do not establish runtime acceptance.
+The [foundation review workflow](.github/workflows/foundation-review.yml) tests the legacy converter, import UI and desktop, and builds the actual foundation binary. The launcher has lightweight selection tests that do not build or launch native code. The [October 2026 audit](docs/SOURCE_BUILD_PROVENANCE.md) records 58 passing focused Rust tests, the native Windows check/build, a genuine source-matched native capture and an import/unsaved-close smoke test at `6a104ff`. The retained image below shows the legacy editor. Broader native pointer, keyboard, scaling and accessibility acceptance remains open.
 
 ## Retained legacy bracket and disk editor
 
