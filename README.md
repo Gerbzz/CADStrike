@@ -29,11 +29,15 @@ Install a Rust toolchain supporting edition 2024 and the Windows desktop prerequ
 
 The launcher always selects `foundation/Cargo.toml`, package and binary `cadstrike`, and a separate `foundation/target` directory. It embeds the checkout's Git revision using the desktop's existing build-identity hook; modified checkouts are marked `-dirty`. To pass desktop arguments, use `-AppArguments @('--sample')`. Cargo must be available on `PATH`; dependencies must already be cached for offline operation.
 
-The equivalent explicit Cargo command is:
+On Windows the launcher requires successful icon/version-resource compilation with the installed Windows SDK resource compiler. It reports a build failure rather than starting an executable with missing Windows identity resources. Paths containing spaces and apostrophes, including the Room PC's user directory, are supported.
+
+For manual Cargo use, select the foundation workspace explicitly:
 
 ```powershell
 cargo run --locked --manifest-path foundation/Cargo.toml --package cadstrike --bin cadstrike --target-dir foundation/target
 ```
+
+The launcher also supplies `CADCRAFT_BUILD_SHA` and requires `CADCRAFT_REQUIRE_WINRES=1`. A manual Cargo invocation needs those environment values for the same revision stamp and Windows-resource enforcement.
 
 The root command `cargo run --features native-ui --bin cadstrike-ui` opens the legacy bracket editor. It does **not** open the CADCraft drawing desktop. A root `target/debug/cadstrike.exe` is the legacy CLI; the same executable name under `foundation/target/debug/` is the foundation desktop when built for the default host target. Select the workspace as well as the executable name.
 

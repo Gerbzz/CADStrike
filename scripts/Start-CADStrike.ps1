@@ -47,10 +47,13 @@ Write-Host "CADStrike CADCraft foundation: $sourceStamp"
 Write-Host "Manifest: $manifest"
 Write-Host "Build output: $target"
 $priorStamp = $env:CADCRAFT_BUILD_SHA
+$priorWinres = $env:CADCRAFT_REQUIRE_WINRES
 try {
     $env:CADCRAFT_BUILD_SHA = $sourceStamp
+    $env:CADCRAFT_REQUIRE_WINRES = '1'
     & cargo @cargoArguments
     if ($LASTEXITCODE -ne 0) { throw "CADStrike Cargo $action failed with exit code $LASTEXITCODE." }
 } finally {
     $env:CADCRAFT_BUILD_SHA = $priorStamp
+    $env:CADCRAFT_REQUIRE_WINRES = $priorWinres
 }

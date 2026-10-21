@@ -11,6 +11,8 @@ jobs:
       CARGO_BUILD_JOBS: '2'
       CARGO_INCREMENTAL: '0'
       CARGO_PROFILE_DEV_DEBUG: '0'
+      CADCRAFT_REQUIRE_WINRES: '1'
+      CADCRAFT_BUILD_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - name: Test foundation launcher selection without a build or app launch
