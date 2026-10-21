@@ -6,7 +6,11 @@ This branch retains the original CADStrike part editor at the repository root an
 
 From `foundation/`, run `cargo run --locked -p cadstrike`. The desktop uses CADCraft's drawing tools, dimensions, constraints, selection, undo and native DXF file workflow. In the File menu, **Import CADStrike sketch** asks the user to choose an existing `.cadstrike` bracket or disk project. It validates the source, creates a separate metric 2D drawing with stable source-ID to CADCraft-handle mapping, and leaves the source file and previously open drawing intact. Save the resulting drawing as DXF to continue editing in this candidate. Invalid or oversized legacy files report an error without replacing the active drawing. The imported sketch geometry is 2D; it does not carry the old part's extrusion as an editable solid.
 
+From the repository root on Windows, the primary launcher is `./scripts/Start-CADStrike.ps1`. Use `-PlanOnly` to inspect its manifest, target directory, donor pin and build identity without building or launching. Use `-BuildOnly` to compile without opening the desktop. The launcher always uses this foundation workspace, locked dependencies and a separate `foundation/target` directory, and passes the Git revision to the existing `CADCRAFT_BUILD_SHA` hook. A changed checkout is marked `-dirty`; an archive without Git identity is marked `unversioned`.
+
 For the original part workflow, run `cargo run --locked --features native-ui --bin cadstrike-ui` from the repository root. Its `.cadstrike` v1 file remains the editable bracket/disk source, with STL export through the existing CLI. The foundation does not replace that executable or silently convert its files.
+
+Both workspaces have a package named `cadstrike`. The root package's `cadstrike` binary is the legacy CLI. The foundation package's `cadstrike` binary is the CADCraft desktop. Always identify the manifest and target path; the filename alone is insufficient. The retained screenshot in the root README is explicitly a legacy-editor capture. The [source/build audit](SOURCE_BUILD_PROVENANCE.md) records why a fresh foundation runtime capture is still required.
 
 ## Review evidence and remaining work
 
