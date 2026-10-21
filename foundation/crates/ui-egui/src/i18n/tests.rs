@@ -340,7 +340,7 @@ fn live_switch_translates_the_shell_without_mutating_drawing_or_automation() {
 fn dialogs_render_in_ukrainian_and_keep_their_source_ids() {
     for (dialog, heading) in [
         ("dsettings", "Налаштування креслення"),
-        ("about", "Про CADCraft"),
+        ("about", "Про CADStrike"),
         ("commands", "Довідник команд"),
         ("blocks", "Блоки"),
         ("layers", "Диспетчер властивостей шарів"),
@@ -473,7 +473,7 @@ fn live_czech_switch_preserves_drawing_command_and_saved_choice() {
 fn czech_dialogs_render_with_stable_ids() {
     for (dialog, heading) in [
         ("dsettings", "Nastavení kreslení"),
-        ("about", "O aplikaci CADCraft"),
+        ("about", "O aplikaci CADStrike"),
         ("commands", "Přehled příkazů"),
         ("blocks", "Bloky"),
         ("layers", "Správce vlastností hladin"),

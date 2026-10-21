@@ -996,3 +996,9 @@
 	Import...	Importer...
 	Export...	Exporter...
 	Batch Publish...	Publication par lots...
+
+# CADStrike integration keys; original donor catalog rows remain above.
+	About CADStrike	À propos de CADStrike
+	CADStrike Help	Aide de CADStrike
+	Quit CADStrike	Quitter CADStrike
+	Hide CADStrike	Masquer CADStrike
