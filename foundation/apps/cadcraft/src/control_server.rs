@@ -101,8 +101,8 @@ fn accept_loop(listener: TcpListener, tx: SyncSender<ControlRequest>, ctx: egui:
 /// `Ok(false)` at end of stream; `Err` when the line is too long or the read fails.
 fn read_bounded_line(reader: &mut impl BufRead, buf: &mut Vec<u8>, max: usize) -> Result<bool, String> {
     buf.clear();
-    // `take` bounds the bytes buffered for one line: a peer can't make us allocate more than `max`.
-    let limit = u64::try_from(max).unwrap_or(u64::MAX).saturating_add(1);
+    // Allow either line terminator while bounding storage to the payload limit plus CRLF.
+    let limit = u64::try_from(max).unwrap_or(u64::MAX).saturating_add(2);
     let n = reader.take(limit).read_until(b'\n', buf).map_err(|e| match e.kind() {
         // The idle timeout ran out (Windows reports it as TimedOut, Unix as WouldBlock).
         ErrorKind::TimedOut | ErrorKind::WouldBlock => "request line not completed in time; closing the connection".to_string(),
@@ -116,7 +116,6 @@ fn read_bounded_line(reader: &mut impl BufRead, buf: &mut Vec<u8>, max: usize) -
         if buf.last() == Some(&b'\r') {
             buf.pop();
         }
-        return Ok(true);
     }
     if buf.len() > max {
         return Err(format!("request line longer than {max} bytes; closing the connection"));
@@ -236,13 +235,27 @@ mod tests {
     }
 
     #[test]
+    fn exact_limit_crlf_is_accepted_but_an_extra_payload_byte_is_not() {
+        for line in [&b"aaaaaaaaaa\r\n"[..], b"aaaaaaaaaa\n"] {
+            let mut input = line;
+            let mut buf = Vec::new();
+            assert_eq!(read_bounded_line(&mut input, &mut buf, 10), Ok(true));
+            assert_eq!(buf, b"aaaaaaaaaa");
+        }
+        for line in [&b"aaaaaaaaaaa\r\n"[..], b"aaaaaaaaaaa\n"] {
+            let mut input = line;
+            assert!(read_bounded_line(&mut input, &mut Vec::new(), 10).is_err());
+        }
+    }
+
+    #[test]
     fn an_overlong_line_is_refused_without_reading_the_rest() {
         let mut buf = Vec::new();
         let long = [b'x'; 100];
         let mut input: &[u8] = &long;
         assert!(read_bounded_line(&mut input, &mut buf, 10).is_err());
-        assert!(buf.len() <= 11, "at most limit + 1 bytes are buffered, got {}", buf.len());
-        assert_eq!(input.len(), 100 - 11, "the rest of the line is left unread");
+        assert!(buf.len() <= 12, "payload limit plus at most two terminator bytes are buffered, got {}", buf.len());
+        assert!(input.len() >= 100 - 12, "the unbounded remainder is left unread");
     }
 
     fn short() -> Limits {

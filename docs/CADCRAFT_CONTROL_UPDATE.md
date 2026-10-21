@@ -20,7 +20,7 @@ The existing optional JSON-lines control server still binds only `127.0.0.1`, us
 | Blank line | Skipped |
 | Valid request | Preserves request ID; missing ID remains `null` |
 
-One compatibility correction differs from the donor: HTTP detection runs only after JSON parsing fails. The donor's earlier detection could misclassify a valid request whose JSON string ends in text such as `literal HTTP/1.1`. A regression reproduced that rejection before the parser-order fix; ordinary HTTP rejection and body nondispatch still pass.
+Two compatibility corrections differ from the donor. HTTP detection runs only after JSON parsing fails: the donor's earlier detection could misclassify valid JSON ending in text such as `literal HTTP/1.1`. The bounded reader also allows both LF and CRLF terminators at the exact payload limit, validating payload length after stripping them. Each regression failed before its fix; HTTP body nondispatch and rejection of an extra payload byte still pass.
 
 ## Verification scope
 
@@ -31,6 +31,8 @@ The initial public-transport regression failed on the old source because an HTTP
 Exact rustc commands, cached-library hashes, source snapshots, test logs and exit codes are retained outside the repository under `control-evidence/`. The first harness link attempt lacked the cached Windows import-library search path; supplying that existing path resolved LNK1181 without installing or compiling anything new. Selected-file rustfmt and patch whitespace checks also pass.
 
 Independent read-only review cleared the port with no unresolved findings. Its minor test-timing concern was corrected by keeping the blocked-write test's reply deadline beyond its completion assertion; the final 15-test receipt matches the resulting source hash. Tests use small line/queue limits and short deadlines where appropriate; the production 256 MiB line capacity was not allocated or benchmarked.
+
+Publication review additionally identified the donor CRLF boundary above. A small-limit regression reproduced it, alongside the pre-existing renamed-desktop layer-registration defect. The expanded transport/layer harness covers both corrections. Hosted CI now also runs the full foundation `xtask ci` gate (formatting, clippy, workspace tests, asset attribution, layering and WASM checks). Its result is reported on the PR; the earlier focused receipts do not claim that full gate passed.
 
 The full desktop Cargo test/check/build gates have not been rerun for this port while another project holds the heavy-build slot. Before treating this newer source as a native desktop build, run the existing Windows review gates, including:
 
