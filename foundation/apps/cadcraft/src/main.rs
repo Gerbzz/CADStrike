@@ -16,6 +16,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 #[path = "../../../assets/strike_icon.rs"]
+#[cfg_attr(not(test), expect(dead_code, reason = "The shared renderer includes other Strike app variants and build-only helpers."))]
 mod strike_icon;
 
 mod control_server;
@@ -128,6 +129,12 @@ fn services() -> Services {
                 .add_filter(i18n::t("Drawings (DWG, DXF)"), &["dwg", "dxf", "dwt"])
                 .add_filter(i18n::t("SVG drawings (SVG, SVGZ)"), &["svg", "svgz"])
                 .add_filter(i18n::t("All files"), &["*"])
+                .pick_file()
+                .map(|p| p.to_string_lossy().to_string())
+        })),
+        pick_cadstrike_sketch: Some(Box::new(|| {
+            rfd::FileDialog::new()
+                .add_filter(i18n::t("CADStrike legacy sketches"), &["cadstrike"])
                 .pick_file()
                 .map(|p| p.to_string_lossy().to_string())
         })),
@@ -411,7 +418,7 @@ mod tests {
         assert_eq!(super::APP_ID, "local.cadstrike");
         let icon = super::app_icon().expect("generated CADStrike icon");
         assert_eq!((icon.width, icon.height, icon.rgba.len()), (128, 128, 128 * 128 * 4));
-        assert!(icon.rgba.chunks_exact(4).any(|p| p[3] == 255 && p[1] > p[0]));
+        assert!(icon.rgba.as_chunks::<4>().0.iter().any(|p| p[3] == 255 && p[1] > p[0]));
         assert!(super::version_string().contains("CADStrike"));
         assert!(super::version_string().contains("CADCraft foundation"));
     }

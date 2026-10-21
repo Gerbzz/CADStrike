@@ -117,7 +117,12 @@ fn run_ui_command_inner(app: &mut CadApp, id: &str, params: &Value) -> Option<Re
             Ok(json!({"interfaceLanguage": preference.code()}))
         }
         "strikeimportsketch" if no_path => {
-            let Some(path) = app.services.pick_open.as_ref().and_then(|pick| pick()) else { return Some(Ok(Value::Null)) };
+            let Some(pick) = app.services.pick_cadstrike_sketch.as_ref() else {
+                let error = "CADStrike sketch file selection is unavailable in this host".to_string();
+                app.open_failed(error.clone());
+                return Some(Err(error));
+            };
+            let Some(path) = pick() else { return Some(Ok(Value::Null)) };
             let source = (|| -> Result<Vec<u8>, String> {
                 use std::io::Read;
                 let file = std::fs::File::open(&path).map_err(|e| format!("{path}: {e}"))?;
@@ -632,6 +637,7 @@ mod tests {
                 log.borrow_mut().push(name.to_string());
                 answer.clone()
             })),
+            ..Services::default()
         };
         (CadApp::new(Session::new(), services), asked)
     }
@@ -644,7 +650,7 @@ mod tests {
             "next_id":9,"profile":{"kind":"Bracket","width_mm":80.0,"height_mm":50.0,
             "leg_mm":10.0,"entity_ids":[3,4,5,6,7,8]},"depth_mm":6.0});
         let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).expect("clock").as_nanos();
-        let path = std::env::temp_dir().join(format!("cadstrike-picker-{}-{stamp}.json", std::process::id()));
+        let path = std::env::temp_dir().join(format!("cadstrike-picker-{}-{stamp}.cadstrike", std::process::id()));
         let mut file = std::fs::OpenOptions::new().write(true).create_new(true).open(&path).expect("new synthetic source");
         file.write_all(&serde_json::to_vec(&source).expect("fixture JSON")).expect("write synthetic source");
         drop(file);
@@ -652,7 +658,8 @@ mod tests {
         let selections = Rc::new(RefCell::new(0usize));
         let count = selections.clone();
         let services = Services {
-            pick_open: Some(Box::new(move || {
+            pick_open: Some(Box::new(|| panic!("legacy import must not use the drawing picker"))),
+            pick_cadstrike_sketch: Some(Box::new(move || {
                 *count.borrow_mut() += 1;
                 Some(selected.clone())
             })),
@@ -661,13 +668,60 @@ mod tests {
         let mut app = CadApp::new(Session::new(), services);
         let original = app.session.doc().expect("starter drawing").clone();
         app.start("strikeimportsketch");
+        assert_eq!(std::fs::read(&path).expect("legacy source preserved"), serde_json::to_vec(&source).expect("fixture JSON"));
         std::fs::remove_file(&path).expect("remove synthetic source");
         assert_eq!(*selections.borrow(), 1);
         assert_eq!(app.session.docs.len(), 2);
         assert_eq!(*app.session.docs[0].doc, original);
         assert_eq!(app.session.doc().expect("imported sketch").model.len(), 6);
         assert!(app.session.state().expect("imported state").path.is_none());
+        assert!(app.session.state().expect("imported state").is_dirty());
         assert!(app.status.as_ref().is_some_and(|(message, _)| message.contains("3D solid and extrusion are not")));
+        app.start("close");
+        assert_eq!(app.session.docs.len(), 2, "closing an unsaved import must ask before discarding it");
+        assert!(app.closing.is_some());
+    }
+
+    #[test]
+    fn cadstrike_cancelled_picker_preserves_the_active_drawing() {
+        let services = Services {
+            pick_open: Some(Box::new(|| panic!("legacy import must not use the drawing picker"))),
+            pick_cadstrike_sketch: Some(Box::new(|| None)),
+            ..Services::default()
+        };
+        let mut app = CadApp::new(Session::new(), services);
+        let original = app.session.doc().expect("starter drawing").clone();
+        app.start("strikeimportsketch");
+        assert_eq!(app.session.docs.len(), 1);
+        assert_eq!(*app.session.doc().expect("same drawing"), original);
+        assert!(!app.session.state().expect("same state").is_dirty());
+    }
+
+    #[test]
+    fn cadstrike_missing_legacy_picker_reports_unavailable_without_using_the_drawing_picker() {
+        let services = Services { pick_open: Some(Box::new(|| panic!("legacy import must not use the drawing picker"))), ..Services::default() };
+        let mut app = CadApp::new(Session::new(), services);
+        app.start("strikeimportsketch");
+        assert!(app.status.as_ref().is_some_and(|(message, _)| message.contains("file selection is unavailable")));
+        assert!(app.session.log.iter().any(|message| message.contains("file selection is unavailable")));
+        assert_eq!(app.session.docs.len(), 1);
+    }
+
+    #[test]
+    fn cadstrike_programmatic_import_never_opens_a_picker() {
+        let services = Services {
+            pick_open: Some(Box::new(|| panic!("JSON import must not use a drawing picker"))),
+            pick_cadstrike_sketch: Some(Box::new(|| panic!("JSON import must not use a legacy picker"))),
+            ..Services::default()
+        };
+        let mut app = CadApp::new(Session::new(), services);
+        let source = json!({"schema_version":1,"units":"mm","sketch_id":1,"extrusion_id":2,
+            "next_id":9,"profile":{"kind":"Bracket","width_mm":80.0,"height_mm":50.0,
+            "leg_mm":10.0,"entity_ids":[3,4,5,6,7,8]},"depth_mm":6.0});
+        let bytes = serde_json::to_vec(&source).expect("fixture JSON");
+        app.run("strikeimportsketch", json!({"data":cadcraft_engine::cmd::file::base64_encode(&bytes)})).expect("JSON import");
+        assert_eq!(app.session.docs.len(), 2);
+        assert!(app.session.state().expect("imported state").is_dirty());
     }
 
     #[test]

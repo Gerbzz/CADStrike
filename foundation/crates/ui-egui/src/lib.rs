@@ -171,6 +171,8 @@ impl Default for UiState {
 #[derive(Default)]
 pub struct Services {
     pub pick_open: Option<Box<dyn Fn() -> Option<String>>>,
+    /// Select a legacy `.cadstrike` sketch separately from normal drawing files.
+    pub pick_cadstrike_sketch: Option<Box<dyn Fn() -> Option<String>>>,
     pub pick_save: Option<Box<dyn Fn(&str) -> Option<String>>>,
 }
 

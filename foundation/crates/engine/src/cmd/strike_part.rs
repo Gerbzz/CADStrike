@@ -44,6 +44,9 @@ fn import_sketch(session: &mut Session, params: &Value) -> Result<Value> {
     let profile = part.profile_name();
     let title = format!("CADStrike {profile} 2D sketch (solid not imported)");
     let index = session.open_drawing(sketch.drawing, &title, None);
+    // This drawing has never been saved. Detach its saved snapshot through the
+    // existing copy-on-write edit path so Close/Quit retain their save prompt.
+    session.doc_mut()?;
     Ok(json!({
         "index": index,
         "profile": profile,
@@ -111,6 +114,7 @@ mod tests {
         assert_eq!(*session.docs[0].doc, original);
         assert_eq!(session.doc().expect("new sketch").model.len(), 6);
         assert!(session.state().expect("new state").path.is_none());
+        assert!(session.state().expect("new state").is_dirty(), "imported geometry has never been saved as a drawing");
         assert_eq!(result["solidImported"], false);
         assert_eq!(result["sourceDepthMm"], 6.0);
     }

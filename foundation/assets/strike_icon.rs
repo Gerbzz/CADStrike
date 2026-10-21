@@ -115,7 +115,7 @@ mod tests {
             let mark = rgba(64, kind);
             assert_eq!(mark.len(), 64 * 64 * 4);
             assert_eq!(mark[3], 0);
-            assert!(mark.chunks_exact(4).any(|p| p[3] == 255));
+            assert!(mark.as_chunks::<4>().0.iter().any(|p| p[3] == 255));
             let icon = ico(kind);
             assert_eq!(&icon[..6], &[0, 0, 1, 0, 4, 0]);
         }

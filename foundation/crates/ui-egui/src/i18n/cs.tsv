@@ -1205,3 +1205,10 @@ menu	View	Zobrazení
 menu	Draw	Kreslení
 menu	Dimension	Kótování
 menu	Modify	Modifikace
+
+# CADStrike integration keys; original donor catalog rows remain above.
+	About CADStrike	O aplikaci CADStrike
+	CADStrike Help	Nápověda CADStrike
+	Quit CADStrike	Ukončit CADStrike
+	CADStrike keeps these preferences, object snap modes and drafting toggles for your user account and restores them when it starts.	CADStrike ukládá tyto předvolby, režimy uchopení objektu a přepínače kreslení pro váš uživatelský účet a obnovuje je při spuštění.
+	Hide CADStrike	Skrýt CADStrike

@@ -1012,3 +1012,9 @@
 	Calibrate	Calibrar
 	Move sideways to pan; push/pull or twist to zoom.	Mueve el mando lateralmente para desplazar; empuja, tira o gira para hacer zoom.
 	Left device button: zoom extents. Right device button: calibrate.	Botón izquierdo del dispositivo: zoom a la extensión. Botón derecho: calibrar.
+
+# CADStrike integration keys; original donor catalog rows remain above.
+	About CADStrike	Acerca de CADStrike
+	CADStrike Help	Ayuda de CADStrike
+	Quit CADStrike	Salir de CADStrike
+	Hide CADStrike	Ocultar CADStrike

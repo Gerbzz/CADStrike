@@ -996,3 +996,9 @@
 	Import...	Импорт...
 	Export...	Экспорт...
 	Batch Publish...	Пакетная публикация...
+
+# CADStrike integration keys; original donor catalog rows remain above.
+	About CADStrike	О CADStrike
+	CADStrike Help	Справка CADStrike
+	Quit CADStrike	Выйти из CADStrike
+	Hide CADStrike	Скрыть CADStrike

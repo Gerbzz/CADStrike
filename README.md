@@ -13,52 +13,64 @@
 
 **Give an idea its dimensions.**
 
-## CADCraft foundation review branch
+## CADCraft drawing desktop
 
-The [foundation](foundation/) directory is an isolated CADStrike desktop candidate built from pinned CADCraft source. It includes CADCraft's editable 2D drawing engine, constraints, DXF persistence and native editor, plus a selected-file import of this repository's bracket and disk sketches into a separate drawing. The existing bracket editor at the repository root remains available during review. [Migration details and limits](docs/CADCRAFT_FOUNDATION.md) explain how to run both workflows and what has been verified.
+The CADStrike desktop based on ArtCraft's CADCraft is in [foundation](foundation/). It includes the imported editable 2D drawing engine, constraints, DXF/DWG file workflow and native editor, plus selected-file import of CADStrike bracket and disk sketches into a separate drawing. The original bracket editor remains available as a separate legacy workflow. [Migration details and limits](docs/CADCRAFT_FOUNDATION.md) explain the distinction and the pinned source.
 
-CADStrike starts a simple part with dimensions instead of a fixed drawing. Create bracket or disk sketches, edit features and undo changes, save the `.cadstrike` project, and export a binary STL reference.
-
-![CADStrike native editor showing a dimensioned six-edge bracket sketch](assets/screenshots/cadstrike-bracket-editor.png)
-
-*A retained Windows editor opened a self-authored 120 × 80 × 16 mm bracket project at 10 mm depth. The preview is a 2D sketch outline.*
-
-## Highlights
-
-- Create dimension-driven bracket and disk parts.
-- Keep stable feature IDs in an editable project.
-- Export a binary STL for inspection.
-
-## Current status
-
-Windows engineering checkpoint. The original local workflow was exercised, and a retained capture build whose four depfile source files exactly match this public repository opened a self-authored bracket in the native editor. This standalone package has not been freshly built or interactively reviewed. The canvas shows a 2D sketch outline, not a rotatable solid; broader CAD formats and assemblies remain future work. [Screenshot provenance](docs/SCREENSHOT_PROVENANCE.md) records the bounded capture.
-
-## Keep the editable part
-
-The `.cadstrike` project preserves dimensions and stable feature IDs so a part can be revised. STL export is a triangle reference: it does not carry dimensions, IDs, or intrinsic units. Output coordinates use millimetres by convention, and export does not overwrite an existing file. Keep the project for later edits; the native canvas currently shows a 2D outline.
-
-## Build and use
+### Build and start the CADCraft desktop on Windows
 
 Install a Rust toolchain supporting edition 2024 and the Windows desktop prerequisites for eframe. From the repository root:
+
+```powershell
+.\scripts\Start-CADStrike.ps1 -PlanOnly   # inspect source and build selection; no build or launch
+.\scripts\Start-CADStrike.ps1 -BuildOnly  # build the foundation desktop; no app launch
+.\scripts\Start-CADStrike.ps1             # build as needed and start the foundation desktop
+```
+
+The launcher always selects `foundation/Cargo.toml`, package and binary `cadstrike`, and a separate `foundation/target` directory. It embeds the checkout's Git revision using the desktop's existing build-identity hook; modified checkouts are marked `-dirty`. To pass desktop arguments, use `-AppArguments @('--sample')`. Cargo must be available on `PATH`; dependencies must already be cached for offline operation.
+
+On Windows the launcher requires successful icon/version-resource compilation with the installed Windows SDK resource compiler. It reports a build failure rather than starting an executable with missing Windows identity resources. Paths containing spaces and apostrophes, including the Room PC's user directory, are supported.
+
+For manual Cargo use, select the foundation workspace explicitly:
+
+```powershell
+cargo run --locked --manifest-path foundation/Cargo.toml --package cadstrike --bin cadstrike --target-dir foundation/target
+```
+
+The launcher also supplies `CADCRAFT_BUILD_SHA` and requires `CADCRAFT_REQUIRE_WINRES=1`. A manual Cargo invocation needs those environment values for the same revision stamp and Windows-resource enforcement.
+
+The root command `cargo run --features native-ui --bin cadstrike-ui` opens the legacy bracket editor. It does **not** open the CADCraft drawing desktop. A root `target/debug/cadstrike.exe` is the legacy CLI; the same executable name under `foundation/target/debug/` is the foundation desktop when built for the default host target. Select the workspace as well as the executable name.
+
+## Verification status
+
+The [foundation review workflow](.github/workflows/foundation-review.yml) tests the legacy converter, import UI and desktop, and builds the actual foundation binary. The launcher has lightweight selection tests that do not build or launch native code. The [October 2026 audit](docs/SOURCE_BUILD_PROVENANCE.md) records 58 passing focused Rust tests, the native Windows check/build, a genuine source-matched native capture and an import/unsaved-close smoke test at `6a104ff`. The retained image below shows the legacy editor. Broader native pointer, keyboard, scaling and accessibility acceptance remains open.
+
+## Retained legacy bracket and disk editor
+
+The original part workflow creates bracket or disk sketches with dimensions, stable feature IDs, undo, `.cadstrike` persistence and binary STL reference export. From the repository root:
 
 ```powershell
 cargo test --locked --offline
 cargo run --locked --offline --features native-ui --bin cadstrike-ui
 ```
 
-The CLI works without the native UI feature:
+Its CLI works without the native UI feature:
 
 ```powershell
-cargo run --locked --offline -- new-bracket 80 50 10 6 bracket.cadstrike
-cargo run --locked --offline -- info bracket.cadstrike
-cargo run --locked --offline -- export-stl bracket.cadstrike bracket.stl
+cargo run --locked --offline --bin cadstrike -- new-bracket 80 50 10 6 bracket.cadstrike
+cargo run --locked --offline --bin cadstrike -- info bracket.cadstrike
+cargo run --locked --offline --bin cadstrike -- export-stl bracket.cadstrike bracket.stl
 ```
 
 Remove `--offline` if required crates are not cached locally. Existing output files are not overwritten. Keep the editable project: STL carries triangles, not dimensions, stable IDs, or units; output coordinates use millimetres by convention.
 
+![Retained legacy CADStrike bracket editor, not the CADCraft foundation desktop](assets/screenshots/cadstrike-bracket-editor.png)
+
+*Legacy editor capture: a self-authored 120 × 80 × 16 mm bracket at 10 mm depth, shown as a 2D outline. [Screenshot provenance](docs/SCREENSHOT_PROVENANCE.md) records that bounded capture.*
+
 ## Scope and next steps
 
-The root source package contains the original bounded part workflow. Its optional DXF inspection remains outside this root crate. The separate `foundation/` workspace brings a pinned CADCraft 2D drawing candidate into this branch, with a visible legacy sketch import; it is still short of a unified editable CADStrike part workflow. General 3D parametric features, assemblies, STEP, B-rep solids, and cross-platform acceptance remain open. Complete native pointer, keyboard, scaling, and accessibility review before a release.
+The root source package contains the original bounded part workflow. The separate `foundation/` workspace supplies the actual pinned CADCraft 2D drawing candidate with visible legacy sketch import. A unified editable CADStrike part workflow, general 3D parametric features, assemblies, STEP, B-rep solids and cross-platform acceptance remain open. Complete native pointer, keyboard, scaling and accessibility review before a release. See the [October 2026 source/build audit](docs/SOURCE_BUILD_PROVENANCE.md) for the current source evidence and its runtime limits.
 
 The original root app source is first-party work and bundles no donor code, logo, model, or font. The separate [`foundation/`](foundation/) candidate includes pinned CADCraft source under its [attribution](foundation/ATTRIBUTION.md), [notice](foundation/NOTICE), and [redistribution notes](foundation/STRIKE-REDISTRIBUTION-NOTES.md). Third-party Rust dependencies are listed in the corresponding `Cargo.lock` files and retain their upstream licenses. No first-party license has been selected for the original root checkpoint.
 

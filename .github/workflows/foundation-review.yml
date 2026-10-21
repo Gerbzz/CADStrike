@@ -6,22 +6,58 @@ on:
 jobs:
   windows-source:
     runs-on: windows-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       CARGO_BUILD_JOBS: '2'
       CARGO_INCREMENTAL: '0'
       CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+      CADCRAFT_REQUIRE_WINRES: '1'
+      CADCRAFT_BUILD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify checked-out source identity
+        shell: pwsh
+        run: |
+          $actual = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0 -or $actual -ne $env:CADCRAFT_BUILD_SHA) {
+            throw "Checkout $actual does not match requested source $env:CADCRAFT_BUILD_SHA"
+          }
+      - name: Test foundation launcher selection without a build or app launch
+        run: ./tests/launcher.ps1
+      - name: Prepare hosted WASM check target
+        run: rustup target add wasm32-unknown-unknown
+      - name: Run full foundation quality gate
+        run: cargo run --locked --manifest-path foundation/Cargo.toml -p xtask -- ci
       - name: Test legacy sketch conversion
         run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadstrike-project --test legacy
       - name: Test engine command
         run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-engine --lib strike_part
       - name: Test CADStrike editor import and About asset
         run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-ui-egui --lib cadstrike_
+      - name: Test donor dialog dispatch integration
+        run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-ui-egui --test dialog_dispatch
       - name: Check native CADStrike editor
         run: cargo check --locked --manifest-path foundation/Cargo.toml -p cadstrike
       - name: Test CADStrike desktop binary
         run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadstrike --bin cadstrike
       - name: Build CADStrike desktop binary
         run: cargo build --locked --manifest-path foundation/Cargo.toml -p cadstrike --bin cadstrike
+      - name: Verify built desktop source and Windows identity
+        shell: pwsh
+        run: |
+          $binary = Join-Path $PWD 'foundation/target/debug/cadstrike.exe'
+          $version = & $binary --version
+          if ($LASTEXITCODE -ne 0 -or -not $version.Contains("($env:CADCRAFT_BUILD_SHA; CADCraft foundation)")) {
+            throw "Built desktop identity does not match checked-out source: $version"
+          }
+          $info = (Get-Item -LiteralPath $binary).VersionInfo
+          if ($info.ProductName -ne 'CADStrike' -or $info.OriginalFilename -ne 'cadstrike.exe') {
+            throw 'Built desktop is missing CADStrike Windows identity resources'
+          }
+          $version
+          Get-FileHash -Algorithm SHA256 -LiteralPath $binary
+      - name: Test retained legacy root workflow
+        run: cargo test --locked --manifest-path Cargo.toml
