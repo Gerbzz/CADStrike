@@ -2,7 +2,7 @@
 
 ## Finding
 
-Public `main` was reverified at `845267650898615ff892eee477e8cfacf514ceba`, the PR #2 merge, on the authorized Room PC (`DESKTOP-A4P8DV3`). It contains both the original root bracket/disk editor and the actual imported CADCraft workspace under `foundation/`. The README's primary desktop build command still selected the root legacy `cadstrike-ui` binary. That was a reproducible source-to-launch guidance mismatch and can expose the old interface even when the imported source is present.
+Public `main` was reverified at `845267650898615ff892eee477e8cfacf514ceba`, the PR #2 merge, on the authorized Windows host. It contains both the original root bracket/disk editor and the actual imported CADCraft workspace under `foundation/`. The README's primary desktop build command still selected the root legacy `cadstrike-ui` binary. That was a reproducible source-to-launch guidance mismatch and can expose the old interface even when the imported source is present.
 
 The correction makes `scripts/Start-CADStrike.ps1` the primary documented Windows entry point. It selects the foundation manifest, package and binary explicitly, keeps output under `foundation/target`, and uses Cargo to build as needed before running. It embeds Git revision identity through the desktop's existing `CADCRAFT_BUILD_SHA` hook. `-PlanOnly` runs no Cargo command; `-BuildOnly` opens no app. The original root editor and CLI remain available, including their editable legacy files and STL reference export.
 
@@ -45,7 +45,7 @@ An independent read-only review cleared the launcher and six-file safeguard chan
 
 ## Completed native verification
 
-The build exposed an additional Windows identity defect: `winresource` escaped the apostrophe in `Neil's Room`, causing the Windows resource compiler to report RC2135 for the icon path. The build script previously tolerated that error and omitted the icon/version resources. The fix emits the same icon, resource ID 1, through the documented raw resource-content API with correct filename quoting. The launcher and CI now require successful resource compilation. No artwork was changed. An independent review cleared this follow-up after a small documentation correction.
+The build exposed an additional Windows identity defect: `winresource` escaped an apostrophe in the user-directory path, causing the Windows resource compiler to report RC2135 for the icon path. The build script previously tolerated that error and omitted the icon/version resources. The fix emits the same icon, resource ID 1, through the documented raw resource-content API with correct filename quoting. The launcher and CI now require successful resource compilation. No artwork was changed. An independent review cleared this follow-up after a small documentation correction.
 
 The source-matched desktop was built from clean commit `6a104ffb7b915deb335dcefe2464f57b999b0d0f`. Earlier converter, engine and UI receipts retain their exact source snapshots; the later follow-up changes the Windows build resources, launcher, CI and documentation, not the tested import implementation.
 
