@@ -1,6 +1,7 @@
 //! Windows only: embed the original local CADStrike icon and version info.
 
 #[path = "../../assets/strike_icon.rs"]
+#[expect(dead_code, reason = "The shared renderer includes other Strike app variants and runtime helpers.")]
 mod strike_icon;
 
 fn main() {

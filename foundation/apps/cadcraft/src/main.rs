@@ -16,6 +16,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 #[path = "../../../assets/strike_icon.rs"]
+#[expect(dead_code, reason = "The shared renderer includes other Strike app variants and build-only helpers.")]
 mod strike_icon;
 
 mod control_server;
