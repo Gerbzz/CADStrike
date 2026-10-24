@@ -13,6 +13,12 @@
 
 **Give an idea its dimensions.**
 
+## Rust direction and migration status
+
+- **Target:** Adapt and extend the existing Rust CADCraft foundation into CADStrike, rather than rewrite an already-Rust drawing engine.
+- **Current implementation:** Published `main` selects the Rust desktop in [`foundation/`](foundation/); the original Rust bracket/disk editor and its import converter remain separate legacy paths.
+- **Remaining migration:** Consolidate the product around the CADCraft desktop while preserving legacy-file import; unified editable part workflows, broader CAD features, native interaction, accessibility, and cross-platform release acceptance remain unfinished.
+
 ## CADCraft drawing desktop
 
 The CADStrike desktop based on ArtCraft's CADCraft is in [foundation](foundation/). It includes the imported editable 2D drawing engine, constraints, DXF/DWG file workflow and native editor, plus selected-file import of CADStrike bracket and disk sketches into a separate drawing. The original bracket editor remains available as a separate legacy workflow. [Migration details and limits](docs/CADCRAFT_FOUNDATION.md) explain the distinction and the pinned source.
