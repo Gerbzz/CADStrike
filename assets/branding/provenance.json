@@ -1,70 +1,83 @@
 {
   "app": "CADStrike",
   "asset": "assets/branding/CADStrike.png",
-  "method": "Measured rounded alpha mask applied to the original 656x656 logo tile, then translated by whole pixels to center its visible bounds. Original visible RGB and masked visible RGBA were verified unchanged.",
-  "source_tile": {
-    "repository": "Gerbzz/CADStrike",
-    "commit": "5a826663b1ea698e5a9817f20dbf1801da5f8e08",
-    "path": "assets/branding/CADStrike.png",
-    "sha256": "912f26239f8ee8d246b7cabe26e8eb227217a43fbe2706d1d102b1759c1b24c4",
-    "git_blob_sha": "e4b44190be1f2a074a37c7e7cfbd92ef5049a885"
-  },
-  "mask_and_centering": {
-    "inset_pixels": 1.5,
-    "masked_alpha_bbox": [
-      32,
-      23,
-      650,
-      630
-    ],
-    "centered_alpha_bbox": [
-      19,
-      24,
-      637,
-      631
-    ],
-    "integer_translation": [
-      -13,
-      1
-    ],
-    "padding_ltrb": [
-      19,
-      24,
-      19,
-      25
-    ],
-    "original_visible_rgb_exact": true,
-    "masked_visible_rgba_exact": true,
-    "transparent_corners": true
-  },
+  "method": "Exact approved 512x512 PNG from user-provided Strike-Logos-GitHub-2026-10-25 handoff. No crop, translation, recoloring or padding changes.",
+  "handoff_file": "approved/CADStrike/CADStrike-logo.png",
+  "sha256": "be30c3ebefc7fadb8300a06a4a3e589b6e9a56f123b0d8313a59c5ac206e80f9",
   "dimensions": [
-    656,
-    656
+    512,
+    512
   ],
   "mode": "RGBA",
-  "sha256": "1e39030bfabfcfb9694f7b58c2d27920f953fb25c59221acd59a2f0cde726dcd",
-  "decoded_rgba_sha256": "f7eb7f2a66f4cadc34c7b13516d52149ace4f085ad5de0d9cc2b78b494002a40",
-  "git_blob_sha": "dc15a1210cc5379f92af2ce2816b7b1f8bd27fa8",
-  "tool": "ImageMagick 7.1.2-34 Q16 x64",
-  "original_tile_provenance": {
+  "decoded_rgba_sha256": "56ce7966ffbe668dbaebf4a619860868e5acc8ac58a98c177b16e11057ebfb1d",
+  "previous_provenance": {
     "app": "CADStrike",
     "asset": "assets/branding/CADStrike.png",
-    "method": "Lossless rectangular extraction of original pixels with ImageMagick. No scaling, recoloring, tracing, generation, transparency fabrication or animal changes. Original cream outside rounded corners retained. Labels excluded.",
-    "coordinate_system": "Origin top-left; crop bounds [left, top, right, bottom), right/bottom exclusive.",
-    "source_sha256": "be5c41f093d9b943cd03a6c9669c353b6970d063bfee04d029179e73cf0c4d56",
-    "crop_bounds": [
-      1360,
-      0,
-      2016,
-      656
-    ],
+    "method": "Measured rounded alpha mask applied to the original 656x656 logo tile, then translated by whole pixels to center its visible bounds. Original visible RGB and masked visible RGBA were verified unchanged.",
+    "source_tile": {
+      "repository": "Gerbzz/CADStrike",
+      "commit": "5a826663b1ea698e5a9817f20dbf1801da5f8e08",
+      "path": "assets/branding/CADStrike.png",
+      "sha256": "912f26239f8ee8d246b7cabe26e8eb227217a43fbe2706d1d102b1759c1b24c4",
+      "git_blob_sha": "e4b44190be1f2a074a37c7e7cfbd92ef5049a885"
+    },
+    "mask_and_centering": {
+      "inset_pixels": 1.5,
+      "masked_alpha_bbox": [
+        32,
+        23,
+        650,
+        630
+      ],
+      "centered_alpha_bbox": [
+        19,
+        24,
+        637,
+        631
+      ],
+      "integer_translation": [
+        -13,
+        1
+      ],
+      "padding_ltrb": [
+        19,
+        24,
+        19,
+        25
+      ],
+      "original_visible_rgb_exact": true,
+      "masked_visible_rgba_exact": true,
+      "transparent_corners": true
+    },
     "dimensions": [
       656,
       656
     ],
-    "sha256": "912f26239f8ee8d246b7cabe26e8eb227217a43fbe2706d1d102b1759c1b24c4",
-    "decoded_rgb_sha256": "3253c6f00f1c267c49cf3e16840c63658a0e329b6088e560583ab50923fe48cd",
-    "pixel_equality_verified": true,
-    "git_blob_sha": "e4b44190be1f2a074a37c7e7cfbd92ef5049a885"
+    "mode": "RGBA",
+    "sha256": "1e39030bfabfcfb9694f7b58c2d27920f953fb25c59221acd59a2f0cde726dcd",
+    "decoded_rgba_sha256": "f7eb7f2a66f4cadc34c7b13516d52149ace4f085ad5de0d9cc2b78b494002a40",
+    "git_blob_sha": "dc15a1210cc5379f92af2ce2816b7b1f8bd27fa8",
+    "tool": "ImageMagick 7.1.2-34 Q16 x64",
+    "original_tile_provenance": {
+      "app": "CADStrike",
+      "asset": "assets/branding/CADStrike.png",
+      "method": "Lossless rectangular extraction of original pixels with ImageMagick. No scaling, recoloring, tracing, generation, transparency fabrication or animal changes. Original cream outside rounded corners retained. Labels excluded.",
+      "coordinate_system": "Origin top-left; crop bounds [left, top, right, bottom), right/bottom exclusive.",
+      "source_sha256": "be5c41f093d9b943cd03a6c9669c353b6970d063bfee04d029179e73cf0c4d56",
+      "crop_bounds": [
+        1360,
+        0,
+        2016,
+        656
+      ],
+      "dimensions": [
+        656,
+        656
+      ],
+      "sha256": "912f26239f8ee8d246b7cabe26e8eb227217a43fbe2706d1d102b1759c1b24c4",
+      "decoded_rgb_sha256": "3253c6f00f1c267c49cf3e16840c63658a0e329b6088e560583ab50923fe48cd",
+      "pixel_equality_verified": true,
+      "git_blob_sha": "e4b44190be1f2a074a37c7e7cfbd92ef5049a885"
+    }
   }
 }

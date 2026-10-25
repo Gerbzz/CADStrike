@@ -354,9 +354,9 @@ fn cadstrike_about_logo(ctx: &egui::Context) -> Option<egui::TextureHandle> {
 fn approved_cadstrike_about_logo_has_transparent_corners() {
     let png = include_bytes!("../../../../assets/branding/CADStrike.png");
     let rgba = image::load_from_memory_with_format(png, image::ImageFormat::Png).expect("approved CADStrike logo decodes").to_rgba8();
-    assert_eq!(rgba.dimensions(), (656, 656));
+    assert_eq!(rgba.dimensions(), (512, 512));
     assert_eq!(rgba.get_pixel(0, 0)[3], 0);
-    assert_eq!(rgba.get_pixel(655, 655)[3], 0);
+    assert_eq!(rgba.get_pixel(511, 511)[3], 0);
 }
 
 fn commands(app: &mut CadApp, ctx: &egui::Context, open: &mut bool) {
