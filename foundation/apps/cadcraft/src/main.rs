@@ -15,10 +15,6 @@
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
-#[path = "../../../assets/strike_icon.rs"]
-#[cfg_attr(not(test), expect(dead_code, reason = "The shared renderer includes other Strike app variants and build-only helpers."))]
-mod strike_icon;
-
 mod control_server;
 mod desktop_theme;
 #[cfg(any(target_os = "windows", test))]
@@ -185,7 +181,7 @@ fn config_dir_from(var: impl Fn(&str) -> Option<std::ffi::OsString>) -> Option<s
 const APP_ID: &str = "local.cadstrike";
 
 fn app_icon() -> Option<egui::IconData> {
-    Some(egui::IconData { rgba: strike_icon::rgba(128, strike_icon::Kind::Cad), width: 128, height: 128 })
+    Some(egui::IconData { rgba: include_bytes!("../../../../assets/branding/CADStrike-128.rgba").to_vec(), width: 128, height: 128 })
 }
 
 fn version_string() -> String {
@@ -416,7 +412,7 @@ mod tests {
     #[test]
     fn desktop_identity_uses_original_cadstrike_mark() {
         assert_eq!(super::APP_ID, "local.cadstrike");
-        let icon = super::app_icon().expect("generated CADStrike icon");
+        let icon = super::app_icon().expect("approved CADStrike icon");
         assert_eq!((icon.width, icon.height, icon.rgba.len()), (128, 128, 128 * 128 * 4));
         assert!(icon.rgba.as_chunks::<4>().0.iter().any(|p| p[3] == 255 && p[1] > p[0]));
         assert!(super::version_string().contains("CADStrike"));

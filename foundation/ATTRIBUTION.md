@@ -64,3 +64,7 @@ Generated-in-code assets are original and have no file to list:
 | `crates/ui-egui/src/i18n/cs.tsv` | @Losminek (AI-assisted) | Original Czech translations of CADCraft English strings | MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) | No proprietary localization resources copied |
 | `crates/ui-egui/src/i18n/ru.tsv` | @pechnikov2026-star | Original Russian translations of CADCraft English strings | MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) | No proprietary localization resources copied |
 | `crates/ui-egui/src/i18n/fr.tsv` | @pechnikov2026-star | Original French translations of CADCraft English strings | MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) | No proprietary localization resources copied |
+
+| `../assets/branding/CADStrike.png` | Gerbzz / approved Codex artwork | User-provided Strike-Logos-GitHub-2026-10-25 handoff | User-approved product branding; no new first-party licence grant | Exact approved 512-pixel source; prior history retained in provenance.json |
+| `../assets/branding/CADStrike-128.rgba` | Same approved artwork | Full-canvas LANCZOS derivative of CADStrike.png | Same product-branding scope; no new licence grant | Active foundation window icon |
+| `../assets/branding/CADStrike.ico` | Same approved artwork | Full-canvas LANCZOS derivatives of CADStrike.png | Same product-branding scope; no new licence grant | Active foundation Windows resource |

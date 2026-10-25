@@ -20,7 +20,30 @@ class ApprovedBranding(unittest.TestCase):
         raw = ROOT/'assets/branding'/(APP+'-128.rgba')
         self.assertTrue(raw.exists(), 'runtime derivative absent')
         self.assertEqual(raw.read_bytes(), source.resize((128,128),Image.Resampling.LANCZOS).tobytes())
-        self.assertIn(APP+'-128.rgba', (ROOT/'src/bin/cadstrike-ui.rs').read_text())
+        self.assertIn(APP+'-128.rgba', (ROOT/'foundation/apps/cadcraft/src/main.rs').read_text())
+
+    def test_actual_foundation_runtime_and_resource(self):
+        native = (ROOT/'foundation/apps/cadcraft/src/main.rs').read_text()
+        self.assertIn('include_bytes!("../../../../assets/branding/CADStrike-128.rgba")', native)
+        self.assertNotIn('strike_icon::rgba', native)
+        build = (ROOT/'foundation/apps/cadcraft/build.rs').read_text()
+        self.assertIn('include_bytes!("../../../assets/branding/CADStrike.ico")', build)
+        self.assertNotIn('strike_icon::ico', build)
+        self.assertIn('CADCRAFT_REQUIRE_WINRES', build)
+        self.assertIn('append_rc_content', build)
+
+    def test_all_windows_frames_preserve_full_canvas(self):
+        from io import BytesIO
+        import struct
+        data = (ROOT/'assets/branding/CADStrike.ico').read_bytes()
+        sizes = (16,24,32,48,64,128,256)
+        self.assertEqual(struct.unpack_from('<HHH', data), (0,1,len(sizes)))
+        source = Image.open(ROOT/'assets/branding/CADStrike.png').convert('RGBA')
+        for i,size in enumerate(sizes):
+            w,h,c,r,planes,bpp,length,offset = struct.unpack_from('<BBBBHHII',data,6+16*i)
+            frame = Image.open(BytesIO(data[offset:offset+length])).convert('RGBA')
+            self.assertEqual(frame.size,(size,size))
+            self.assertEqual(frame.tobytes(),source.resize((size,size),Image.Resampling.LANCZOS).tobytes())
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,19 +1,15 @@
 //! Windows only: embed the original local CADStrike icon and version info.
 
-#[path = "../../assets/strike_icon.rs"]
-#[expect(dead_code, reason = "The shared renderer includes other Strike app variants and runtime helpers.")]
-mod strike_icon;
-
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=../../assets/strike_icon.rs");
+    println!("cargo:rerun-if-changed=../../../assets/branding/CADStrike.ico");
     println!("cargo:rerun-if-env-changed=CADCRAFT_REQUIRE_WINRES");
     println!("cargo:rerun-if-env-changed=CADCRAFT_BUILD_SHA");
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("windows") {
         return;
     }
     let icon = std::path::PathBuf::from(std::env::var_os("OUT_DIR").expect("Cargo supplies OUT_DIR")).join("cadstrike.ico");
-    std::fs::write(&icon, strike_icon::ico(strike_icon::Kind::Cad)).expect("write generated CADStrike icon");
+    std::fs::write(&icon, include_bytes!("../../../assets/branding/CADStrike.ico")).expect("write approved CADStrike icon");
     let mut res = winresource::WindowsResource::new();
     // winresource 0.1.31 adds an escape before apostrophes, which rc.exe reads as a
     // different path (for example in Neil's Room). Quote the generated icon as
