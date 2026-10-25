@@ -4,6 +4,40 @@ on:
   pull_request:
 
 jobs:
+  dxf-units:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_INCREMENTAL: '0'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify checked-out source identity
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Measure hosted runner capacity
+        run: |
+          nproc
+          free -m
+          df -h .
+      - name: Test DXF unit preservation with measured resources
+        run: /usr/bin/time -v cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-io --lib drawing_without_insunits_stays_unitless -- --exact tests::drawing_without_insunits_stays_unitless
+      - name: Test legacy conversion with measured resources
+        run: /usr/bin/time -v cargo test --locked --manifest-path foundation/Cargo.toml -p cadstrike-project --test legacy
+      - name: Test retained bearing conversion with measured resources
+        run: /usr/bin/time -v cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-engine --test units_bearing
+      - name: Measure final hosted workspace use
+        if: always()
+        run: |
+          free -m
+          df -h .
+          du -sh foundation/target 2>/dev/null || true
+
   windows-source:
     runs-on: windows-latest
     timeout-minutes: 120
@@ -29,6 +63,8 @@ jobs:
         run: ./tests/launcher.ps1
       - name: Prepare hosted WASM check target
         run: rustup target add wasm32-unknown-unknown
+      - name: Test DXF unit preservation before the full gate
+        run: cargo test --locked --manifest-path foundation/Cargo.toml -p cadcraft-io --lib drawing_without_insunits_stays_unitless -- --exact tests::drawing_without_insunits_stays_unitless
       - name: Run full foundation quality gate
         run: cargo run --locked --manifest-path foundation/Cargo.toml -p xtask -- ci
       - name: Test legacy sketch conversion
