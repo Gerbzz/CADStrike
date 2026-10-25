@@ -1707,3 +1707,37 @@ mod tests {
 
 /// The COMPARE overlay.
 mod compare;
+
+#[cfg(test)]
+mod grid_overflow_tests {
+    use super::*;
+
+    fn grid_frame(scale: f64) -> egui::FullOutput {
+        let mut session = cadcraft_engine::Session::new();
+        session.settings.gridmode = true;
+        session.settings.isodraft = false;
+        let app = CadApp::new(session, crate::Services::default());
+        let xf = Xf {
+            rect: Rect::from_min_size(Pos2::ZERO, vec2(100.0, 100.0)),
+            center: Vec2::ZERO,
+            scale,
+        };
+        let ctx = egui::Context::default();
+        ctx.run_ui(egui::RawInput { screen_rect: Some(xf.rect), ..Default::default() }, |ui| {
+            draw_grid(&app, &ui.painter_at(xf.rect), &xf);
+        })
+    }
+
+    #[test]
+    fn extreme_canvas_grid_is_bounded_without_panicking() {
+        let output = grid_frame(1e-300);
+        assert!(output.shapes.len() < 100, "extreme views must not enumerate a huge grid");
+    }
+
+    #[test]
+    fn ordinary_canvas_grid_still_draws() {
+        let output = grid_frame(10.0);
+        assert!(output.shapes.len() > 2, "ordinary views must retain grid lines as well as the two axes");
+        assert!(output.shapes.len() < 100);
+    }
+}
