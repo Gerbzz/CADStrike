@@ -35,8 +35,8 @@ jobs:
         with:
           toolchain: '1.96.1'
       - name: Run upstream regression
-        run: cargo test --locked -p cadcraft-ui-egui --lib grid_overflow_tests::
+        run: 'cargo test --locked -p cadcraft-ui-egui --lib grid_overflow_tests::'
       - name: Run adjacent regression suite 1
-        run: cargo test --locked -p cadcraft-ui-egui --lib
+        run: 'cargo test --locked -p cadcraft-ui-egui --lib'
       - name: Run adjacent regression suite 2
-        run: cargo test --locked -p cadstrike-project --test legacy
+        run: 'cargo test --locked -p cadstrike-project --test legacy'
