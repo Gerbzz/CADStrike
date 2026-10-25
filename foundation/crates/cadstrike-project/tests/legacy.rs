@@ -56,7 +56,7 @@ fn converted_bracket_handles_survive_native_dxf_round_trip() {
     assert_eq!(sketch.drawing.header.i64("INSUNITS", -1), 4, "converted sketch declares millimetres");
     let bytes = cadcraft_io::write_dxf(&sketch.drawing).into_bytes();
     let reopened = cadcraft_io::read_dxf(&bytes).expect("native DXF reopens");
-    assert_eq!(reopened.header.get_i64("INSUNITS"), Some(4), "native DXF preserves millimetres");
+    assert_eq!(reopened.header.i64("INSUNITS", -1), 4, "native DXF preserves millimetres");
     assert_eq!(reopened.model.len(), 6);
     for handle in sketch.legacy_to_handle.values() {
         assert!(reopened.model.contains(*handle), "source handle lost in native DXF");
