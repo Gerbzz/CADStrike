@@ -1717,15 +1717,14 @@ mod grid_overflow_tests {
         session.settings.gridmode = true;
         session.settings.isodraft = false;
         let app = CadApp::new(session, crate::Services::default());
-        let xf = Xf {
-            rect: Rect::from_min_size(Pos2::ZERO, vec2(100.0, 100.0)),
-            center: Vec2::ZERO,
-            scale,
-        };
+        let xf = Xf { rect: Rect::from_min_size(Pos2::ZERO, vec2(100.0, 100.0)), center: Vec2::ZERO, scale };
         let ctx = egui::Context::default();
-        ctx.run_ui(egui::RawInput { screen_rect: Some(xf.rect), ..Default::default() }, |ui| {
+        let mut output = ctx.run_ui(egui::RawInput { screen_rect: Some(xf.rect), ..Default::default() }, |ui| {
             draw_grid(&app, &ui.painter_at(xf.rect), &xf);
-        })
+        });
+        // No renderer is attached in this test; explicitly consume the initial font texture delta.
+        output.textures_delta.clear();
+        output
     }
 
     #[test]
