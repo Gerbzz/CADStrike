@@ -53,8 +53,10 @@ fn bracket_maps_six_original_ids_to_six_editable_lines() {
 fn converted_bracket_handles_survive_native_dxf_round_trip() {
     let part = read_legacy_v1(&bracket()).expect("valid bracket");
     let sketch = import_legacy_sketch(&part).expect("CADCraft sketch");
+    assert_eq!(sketch.drawing.header.i64("INSUNITS", -1), 4, "converted sketch declares millimetres");
     let bytes = cadcraft_io::write_dxf(&sketch.drawing).into_bytes();
     let reopened = cadcraft_io::read_dxf(&bytes).expect("native DXF reopens");
+    assert_eq!(reopened.header.i64("INSUNITS", -1), 4, "native DXF preserves millimetres");
     assert_eq!(reopened.model.len(), 6);
     for handle in sketch.legacy_to_handle.values() {
         assert!(reopened.model.contains(*handle), "source handle lost in native DXF");
